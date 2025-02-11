@@ -1,0 +1,42 @@
+/* Cool Gaming-Style Background with Moving Effect */
+body {
+    margin: 0;
+    padding: 0;
+    overflow: hidden;
+    font-family: 'Orbitron', sans-serif;
+    color: #fff;
+    text-align: center;
+    background: black;
+}
+
+/* Animated Background */
+@keyframes moveBackground {
+    0% { background-position: 0 0; }
+    100% { background-position: 100vw 100vh; }
+}
+
+.background {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: url('https://www.transparenttextures.com/patterns/circuit-board.png'), linear-gradient(135deg, #0f0c29, #302b63, #24243e);
+    background-size: cover;
+    animation: moveBackground 10s linear infinite alternate;
+    opacity: 0.8;
+}
+
+/* Cool Sleek Text Styling */
+h1 {
+    font-size: 3rem;
+    text-transform: uppercase;
+    text-shadow: 0 0 10px rgba(0, 255, 255, 0.8), 0 0 20px rgba(0, 255, 255, 0.6);
+    margin-top: 20vh;
+}
+
+p {
+    font-size: 1.2rem;
+    letter-spacing: 2px;
+    text-shadow: 0 0 5px rgba(255, 255, 255, 0.5);
+}
