@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Global Chat</title>
+    <script src="https://cdn.jsdelivr.net/npm/ably@1.2.8"></script>
+</head>
+<body>
+    <h2>Global Chat Room</h2>
+    <textarea id="chatbox" rows="10" cols="40" readonly></textarea><br>
+    <input id="username" placeholder="Enter username">
+    <input id="message" placeholder="Type a message..." autocomplete="off">
+    <button onclick="sendMessage()">Send</button>
+
+    <script>
+        const API_KEY = "mGqA8g.tKm8cg:BXet5NQMtxfr8k8I4Ls0MEzeQxmsQHihc80xDsYd-Ko"; // Replace this with your Ably API Key
+        const ably = new Ably.Realtime(API_KEY);
+        const channel = ably.channels.get("global-chat");
+
+        function updateChat(message) {
+            const chatbox = document.getElementById("chatbox");
+            chatbox.value += message + "\n";
+            chatbox.scrollTop = chatbox.scrollHeight;
+        }
+
+        function sendMessage() {
+            const username = document.getElementById("username").value || "Guest";
+            const msg = document.getElementById("message").value.trim();
+            if (!msg) return;
+
+            channel.publish("message", { user: username, text: msg });
+            document.getElementById("message").value = "";
+        }
+
+        channel.subscribe("message", (msg) => {
+            updateChat(`${msg.data.user}: ${msg.data.text}`);
+        });
+    </script>
+</body>
+</html>
