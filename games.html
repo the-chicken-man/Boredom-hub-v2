@@ -17,7 +17,7 @@
     <div class="content">
         <h1>Games</h1>
         <p>Click a button below to play a game!</p>
-        <div id="games-list">
+        <div id="games-list" class="games-container">
             <!-- Games will be added here -->
         </div>
         <script>
@@ -31,6 +31,7 @@
             games.forEach(game => {
                 const button = document.createElement("button");
                 button.innerText = game.name;
+                button.classList.add("game-button");
                 button.onclick = () => window.location.href = game.url;
                 gamesList.appendChild(button);
             });
