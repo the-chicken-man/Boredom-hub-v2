@@ -64,5 +64,7 @@ Boredom Hub is an open-source project licensed under the MIT License.
 - Join our community discussions in the chat feature!
 - For any issues or feature requests, open a GitHub issue.
 
+  ## DEVELOPED BY: CHICKEN MAN AND CALLIEOG
+
 Enjoy your time on **Boredom Hub!** 🎉
 
