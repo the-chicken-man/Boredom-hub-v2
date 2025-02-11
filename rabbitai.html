@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Rabbit AI</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            max-width: 400px;
+            width: 100%;
+        }
+        h1 {
+            text-align: center;
+            font-size: 1.5rem;
+        }
+        .input-area {
+            width: 100%;
+            padding: 10px;
+            margin: 10px 0;
+            font-size: 1rem;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+        .output-area {
+            width: 100%;
+            padding: 10px;
+            margin: 10px 0;
+            font-size: 1rem;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            min-height: 40px;
+            background-color: #f0f0f0;
+        }
+        button {
+            width: 100%;
+            padding: 10px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            font-size: 1rem;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <h1>Rabbit AI</h1>
+        <input type="text" id="user-input" class="input-area" placeholder="Enter math problem..." />
+        <button onclick="solveMathProblem()">Solve</button>
+        <div id="output" class="output-area">Enter a math problem above to solve it.</div>
+    </div>
+
+    <script>
+        // This function is triggered when the user clicks the 'Solve' button
+        function solveMathProblem() {
+            const userInput = document.getElementById("user-input").value.trim();
+            const outputArea = document.getElementById("output");
+
+            // Check if input is empty
+            if (userInput === "") {
+                outputArea.textContent = "Please enter a math problem.";
+                return;
+            }
+
+            try {
+                // Use Math.js to evaluate the expression
+                const result = math.evaluate(userInput);
+                outputArea.textContent = "Result: " + result;
+            } catch (error) {
+                outputArea.textContent = "Sorry, I couldn't solve that. Please check your input.";
+            }
+        }
+    </script>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjs/10.0.0/math.js"></script>
+
+</body>
+</html>
