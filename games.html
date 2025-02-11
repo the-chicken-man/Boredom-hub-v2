@@ -1,26 +1,39 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Games - Boredom Hub</title>
-    <link rel="stylesheet" href="styles.css">
-    <link href="https://fonts.googleapis.com/css2?family=Orbitron&display=swap" rel="stylesheet">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="styles.css">
+  <title>Games - Boredom Hub</title>
 </head>
 <body>
-    <div class="background"></div>
-    <div class="content">
-        <h1>Games Library</h1>
-        <p>Choose from a variety of fun and exciting games!</p>
-        
-        <div class="game-list">
-            <a href="pong.html" class="game-link">🎾 Play Pong</a>
-            <a href="cluster-rush.html" class="game-link">🚀 Play Cluster Rush</a>
-            <a href="2048.html" class="game-link">🔢 Play 2048</a>
-            <a href="#" class="game-link" onclick="alert('More games coming soon!')">🎮 More Games</a>
-        </div>
-        
-        <a href="index.html" class="back-button">⬅ Back to Home</a>
-    </div>
+  <div class="sidebar">
+    <a href="#home">Home</a>
+    <a href="#games">Games</a>
+    <a href="#chat">Chat</a>
+    <a href="#about">About</a>
+  </div>
+
+  <div class="main-content">
+    <header>
+      <h1>Welcome to the Games Section!</h1>
+    </header>
+
+    <section id="game-list">
+      <h2>Available Games</h2>
+
+      <!-- Game 1 Link -->
+      <div class="game">
+        <h3><a href="pong.html">Pong</a></h3>
+        <p>Classic Pong game. <br> <small>Click the link to play!</small></p>
+        <img src="images/pong.png" alt="Pong Game" width="200">
+      </div>
+
+    </section>
+
+    <footer>
+      &copy; 2025 Boredom Hub | All Rights Reserved
+    </footer>
+  </div>
 </body>
 </html>
