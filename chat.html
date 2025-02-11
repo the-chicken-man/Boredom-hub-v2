@@ -7,9 +7,14 @@
     <script src="https://cdn.jsdelivr.net/npm/ably@1.2.8"></script>
     <link rel="stylesheet" href="styles.css">
     <style>
+        #chat-container {
+            position: absolute;
+            right: 20px;
+            width: 50%;
+        }
         #chatbox {
-            width: 80%;
-            height: 350px;
+            width: 100%;
+            height: 500px;
             background: rgba(0, 0, 0, 0.5);
             color: white;
             border: none;
@@ -20,21 +25,16 @@
     </style>
 </head>
 <body>
-    <div class="sidebar">
-        <a href="index.html">Home</a>
-        <a href="games.html">Games</a>
-        <a href="about.html">About Us</a>
-        <a href="contact.html">Contact</a>
-        <a href="chat.html">Chat</a>
+    <div id="chat-container">
+        <h2>Boredom Hub Global Chat</h2>
+        <textarea id="chatbox" readonly></textarea><br>
+        <input id="username" placeholder="Enter username">
+        <input id="message" placeholder="Type a message...">
+        <button onclick="sendMessage()">Send</button>
     </div>
-    <h2>Boredom Hub Global Chat</h2>
-    <textarea id="chatbox" readonly></textarea><br>
-    <input id="username" placeholder="Enter username">
-    <input id="message" placeholder="Type a message...">
-    <button onclick="sendMessage()">Send</button>
 
     <script>
-        const API_KEY = "mGqA8g.tKm8cg:BXet5NQMtxfr8k8I4Ls0MEzeQxmsQHihc80xDsYd-Ko"; // Replace with your Ably API Key
+        const API_KEY = "YOUR_ABLY_API_KEY"; // Replace with your Ably API Key
         const ably = new Ably.Realtime(API_KEY);
         const channel = ably.channels.get("boredom-hub-chat");
 
@@ -62,8 +62,8 @@
 
         channel.subscribe("message", (msg) => {
             updateChat(`${msg.data.user}: ${msg.data.text}`);
-            if (document.hidden) {
-                new Notification("New message from " + msg.data.user, { body: msg.data.text });
+            if (msg.data.text.includes(`@${username}`)) {
+                new Notification("Mention from " + msg.data.user, { body: msg.data.text });
             }
         });
 
