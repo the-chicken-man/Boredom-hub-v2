@@ -6,25 +6,16 @@
     <title>Boredom Hub Chat</title>
     <script src="https://cdn.jsdelivr.net/npm/ably@1.2.8"></script>
     <link rel="stylesheet" href="styles.css">
-    <style>
-        #chat-container {
-            position: absolute;
-            right: 20px;
-            width: 50%;
-        }
-        #chatbox {
-            width: 100%;
-            height: 500px;
-            background: rgba(0, 0, 0, 0.5);
-            color: white;
-            border: none;
-            padding: 10px;
-            font-size: 16px;
-            overflow-y: auto;
-        }
-    </style>
 </head>
 <body>
+    <div class="sidebar">
+        <a href="index.html">Home</a>
+        <a href="games.html">Games</a>
+        <a href="about.html">About Us</a>
+        <a href="contact.html">Contact</a>
+        <a href="chat.html">Chat</a>
+    </div>
+    
     <div id="chat-container">
         <h2>Boredom Hub Global Chat</h2>
         <textarea id="chatbox" readonly></textarea><br>
