@@ -3,20 +3,28 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Global Chat</title>
+    <title>Boredom Hub Chat</title>
     <script src="https://cdn.jsdelivr.net/npm/ably@1.2.8"></script>
+    <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-    <h2>Global Chat Room</h2>
-    <textarea id="chatbox" rows="10" cols="40" readonly></textarea><br>
+    <h2>Boredom Hub Global Chat</h2>
+    <textarea id="chatbox" readonly></textarea><br>
     <input id="username" placeholder="Enter username">
-    <input id="message" placeholder="Type a message..." autocomplete="off">
+    <input id="message" placeholder="Type a message...">
     <button onclick="sendMessage()">Send</button>
 
     <script>
-        const API_KEY = "mGqA8g.tKm8cg:BXet5NQMtxfr8k8I4Ls0MEzeQxmsQHihc80xDsYd-Ko"; // Replace this with your Ably API Key
+        const API_KEY = "YOUR_ABLY_API_KEY"; // Replace with your Ably API Key
         const ably = new Ably.Realtime(API_KEY);
-        const channel = ably.channels.get("global-chat");
+        const channel = ably.channels.get("boredom-hub-chat");
+
+        let username = localStorage.getItem("username") || "Guest";
+        document.getElementById("username").value = username;
+
+        document.getElementById("username").addEventListener("input", function() {
+            localStorage.setItem("username", this.value);
+        });
 
         function updateChat(message) {
             const chatbox = document.getElementById("chatbox");
@@ -25,17 +33,24 @@
         }
 
         function sendMessage() {
-            const username = document.getElementById("username").value || "Guest";
             const msg = document.getElementById("message").value.trim();
             if (!msg) return;
 
+            username = document.getElementById("username").value || "Guest";
             channel.publish("message", { user: username, text: msg });
             document.getElementById("message").value = "";
         }
 
         channel.subscribe("message", (msg) => {
             updateChat(`${msg.data.user}: ${msg.data.text}`);
+            if (document.hidden) {
+                new Notification("New message from " + msg.data.user, { body: msg.data.text });
+            }
         });
+
+        if (Notification.permission !== "granted") {
+            Notification.requestPermission();
+        }
     </script>
 </body>
 </html>
