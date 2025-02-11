@@ -11,16 +11,18 @@ Boredom Hub is your ultimate online entertainment platform, featuring a collecti
 - **2048** – A number-merging puzzle game.
 - **More custom games coming soon!**
 
-### 💬 Chat System *(New in v2!)*
-- Real-time messaging with other users.
-- Secure and private conversations.
-- User-friendly and lightweight design.
+
+  ### Fact generator
+  - **shows you  a cool random fact**
+
+
 
 ### 🐰 Rabbit AI *
 - An interactive AI assistant for fun conversations and recommendations.
 
-### 🖱️ Cursor Effects 
-- Fun and interactive cursor effects to enhance the user experience.
+  ### New v2 style (looks sleek and gaming insipired)
+
+
 
 ## 🚀 Installation & Setup
 
