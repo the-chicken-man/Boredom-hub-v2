@@ -1,0 +1,541 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <meta http-equiv="X-UA-Compatible" content="ie=edge" />
+        <link rel="icon" type="image/x-icon" href="images/favicon.ico" />
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+        <link href="https://fonts.googleapis.com/css2?family=VT323&display=swap" rel="stylesheet" />
+
+        <script
+            src="https://code.jquery.com/jquery-3.6.4.min.js"
+            integrity="sha256-oP6HI9z1XaZNBrJURtCoUT5SUnxFr8s3BzRl+cbzUq8="
+            crossorigin="anonymous"
+        ></script>
+
+        <title>Pixel Jump</title>
+        <style>
+            html,
+            body {
+                padding: 0;
+                margin: 0;
+                background-color: black;
+                overflow: hidden;
+                height: 100%;
+                font-family: 'VT323', monospace;
+            }
+
+            .modal {
+                position: absolute;
+                display: none;
+                top: 50%;
+                left: 50%;
+                transform: translate(-50%, -50%);
+                padding: 40px;
+                background-color: #000;
+                border: solid 2px #fff;
+                color: white;
+                text-align: center;
+                z-index: 1;
+                box-shadow: 0px 8px 6px #222;
+                width: 450px;
+            }
+
+            .modal-title {
+                font-size: 40px;
+                animation-iteration-count: infinite;
+                animation-duration: 4s;
+                animation-name: modal-title-animation;
+                animation-direction: alternate;
+                animation-timing-function: ease-in-out;
+                text-shadow: 0 -1px 4px #fff, 0 -2px 10px #ff0, 0 -10px 20px #ff8000,
+                    0 -18px 40px #f00, 0 -18px 42px #000;
+            }
+
+            @keyframes modal-title-animation {
+                from {
+                    text-shadow: -3px -1px 4px #fff, 1px -2px 10px #ff0, 3px -10px 20px #ff8000,
+                        -3px -18px 40px #f00, -4px -18px 42px #000;
+                }
+                to {
+                    text-shadow: 3px 1px 4px #fff, -2px 2px 10px #ff0, -3px 5px 20px #ff8000,
+                        2px 6px 40px #f00, 5px 22px 42px #000;
+                }
+            }
+
+            .modal-manual {
+                margin-top: 40px;
+                border: solid 2px #fff;
+                background-color: #ddd;
+            }
+
+            .modal-button {
+                margin-top: 50px;
+                cursor: pointer;
+                font-family: 'VT323', monospace;
+                font-weight: bold;
+                font-size: 26px;
+                height: 50px;
+                width: 100%;
+                text-transform: uppercase;
+                border: solid 2px #f00;
+                transition: all 1s;
+                background-color: #ddd;
+            }
+
+            .modal-button:hover {
+                border-color: #c00;
+                background-color: #fcc;
+                transition: all 1s;
+            }
+
+            .tabs {
+                font-size: 0;
+                margin-top: 50px;
+                text-align: center;
+            }
+
+            .tab, .tab-selected {
+                display: inline-block;
+                text-align: center;
+                box-sizing: border-box;
+                width: 150px;
+                overflow: hidden;
+                border: solid 2px #ddd;
+                border-bottom: none;
+                background-color: black;
+                color : #ddd;
+                font-size: 24px;
+                text-transform: uppercase;
+                cursor: pointer;
+                margin: 0 4px 0 4px;
+                height: 45px;
+                line-height: 45px;
+            }
+
+            .tab:hover {
+                background-color: #333;
+                color: white;
+                border-color: white;
+            }
+
+            .tab-selected {
+                border: solid 2px #fff;
+                background-color: white;
+                color: black;
+            }
+
+            .tab-content {
+                border: solid 2px #fff;
+                margin: 0 auto;
+                display: none;
+                height: 435px;
+                overflow-x: hidden;
+                overflow-y: auto;
+            }
+
+            .modal-leader-board {
+                box-sizing: border-box;
+                margin: 0 auto;
+                padding: 10px;
+                width: 100%;
+                color: black;
+                font-weight: bold;
+                text-shadow: 2px 2px #ddd;
+                height: 100%;
+            }
+
+            .modal-leader-board-row {
+                display: inline-grid;
+                grid-template-columns: 50% 50%;
+                align-items: center;
+                width: 100%;
+                padding-top: 10px;
+                font-size: 30px;
+                text-align: center;
+            }
+
+            .modal-stats {
+                box-sizing: border-box;
+                margin: 0 auto;
+                padding: 10px;
+                width: 100%;
+                color: black;
+                font-weight: bold;
+                text-shadow: 2px 2px #ddd;
+                height: 100%;
+            }
+
+            .modal-points {
+                padding: 15px 0;
+                text-align: center;
+                font-size: 40px;
+            }
+
+            .modal-stat-row {
+                display: inline-grid;
+                grid-template-columns: 40% 60%;
+                align-items: center;
+                width: 100%;
+            }
+
+            .modal-stat-text {
+                padding: 10px;
+                font-size: 30px;
+                text-align: center;
+            }
+
+            .modal input[type='text'] {
+                border: solid 2px #fff;
+                display: none;
+                margin: 30px auto 0 auto;
+                caret-color: white;
+                font-size: 35px;
+                text-align: center;
+                width: 90%;
+                background-color: black;
+                color: white;
+                font-family: 'VT323', monospace;
+            }
+
+            .hud {
+                border: 2px solid #ddd;
+                border-bottom: none;
+                position: absolute;
+                height: 50px;
+                overflow: hidden;
+                padding: 7px;
+                background-color: #333;
+                text-transform: uppercase;
+                box-sizing: border-box;
+            }
+
+            .hud-text {
+                color: white;
+                font-size: 23px;
+                font-family: 'VT323', monospace;
+                vertical-align: middle;
+                margin-left: 15px;
+            }
+
+            @media only screen and (max-width: 700px) {
+                .hud-text {
+                    font-size: 12px;
+                }
+                .modal {
+                    font-size: 25px;
+                    padding: 10px;
+                    width: 90%;
+                    left: 50%;
+                    top: 10px;
+                    transform: translate(-50%, 0);
+                }
+                .modal-manual {
+                    width: 80%;
+                    margin-left: auto;
+                    margin-right: auto;
+                }
+                .modal-manual img {
+                    width: 100%;
+                }
+                .modal-button {
+                    font-size: 18px;
+                }
+            }
+
+            .hearts {
+                font-size: 0;
+                float: right;
+                height: 32px;
+            }
+
+            .collectable {
+                display: inline-block;
+                width: 32px;
+                height: 32px;
+                background-repeat: no-repeat;
+                background-image: url('images/hud-red-gem.png');
+                background-position: center;
+                vertical-align: middle;
+                position: relative;
+            }
+
+            .collectable-bg-dot {
+                height: 25px;
+                width: 25px;
+                background-color: #000;
+                border-radius: 50%;
+                display: block;
+                opacity: 0.4;
+                position: absolute;
+                top: 3px;
+                left: 3px;
+            }
+
+            #collectableCount {
+                position: absolute;
+                line-height: 32px;
+                text-align: center;
+                width: 32px;
+                height: 32px;
+            }
+
+            .collectable .hud-text {
+                margin: 0;
+            }
+
+            .audio-button {
+                float: right;
+                margin-right: 10px;
+                width: 32px;
+                height: 32px;
+                background-image: url('images/audio.png');
+                background-repeat: no-repeat;
+                cursor: pointer;
+            }
+
+            .shield {
+                float: right;
+                margin: 0 2px;
+                width: 32px;
+                height: 32px;
+                background-image: url('images/shield-2.png');
+                background-repeat: no-repeat;
+                background-size: 32px;
+                font-size: 24px;
+                line-height: 32px;
+                text-align: center;
+                color: #efefef;
+            }
+
+            .shield-empty {
+                float: right;
+                margin: 0 2px;
+                width: 32px;
+                height: 32px;
+                background-image: url('images/shield-2.png');
+                background-repeat: no-repeat;
+                background-size: 32px;
+                filter: grayscale(100%);
+            }
+
+            .heart, .heart-empty {
+                display: inline-block;
+                margin-left: 4px;
+                width: 32px;
+                height: 32px;
+                background-repeat: no-repeat;
+            }
+
+            .heart {
+                background-image: url('images/heart.png');
+            }
+
+            .heart-empty {
+                background-image: url('images/heart-empty.png');
+            }
+
+            .responsive-canvas {
+                position: absolute;
+                border: solid 2px #ddd;
+                box-sizing: border-box;
+            }
+
+            .on-screen-controls {
+                display: none;
+                height: 100px;
+                overflow: hidden;
+                position: relative;
+                border: 4px solid #ccc;
+                box-sizing: border-box;
+                margin: 0 auto;
+                padding: 5px;
+                background-color: #333;
+                color: white;
+                touch-action: manipulation;
+                user-select: none;
+                -webkit-touch-callout: none;
+            }
+
+            .on-screen-controls .left {
+                width: 80px;
+                height: 40px;
+                box-sizing: border-box;
+                border: solid 2px #000;
+                background-color: #ddd;
+                touch-action: manipulation;
+                user-select: none;
+                -webkit-touch-callout: none;
+                margin: 0 5px 0 0;
+                box-shadow: inset 0px 0px 5px 3px rgba(20, 20, 20, 1);
+            }
+
+            .on-screen-controls .right {
+                width: 80px;
+                height: 40px;
+                box-sizing: border-box;
+                border: solid 2px #000;
+                background-color: #ddd;
+                touch-action: manipulation;
+                user-select: none;
+                -webkit-touch-callout: none;
+                margin: 0 0 0 5px;
+                box-shadow: inset 0px 0px 5px 3px rgba(20, 20, 20, 1);
+            }
+
+            .on-screen-controls .down {
+                width: 50px;
+                height: 60px;
+                box-sizing: border-box;
+                border: solid 2px #000;
+                background-color: #ddd;
+                margin-top: 25px;
+                touch-action: manipulation;
+                -webkit-touch-callout: none;
+                user-select: none;
+                box-shadow: inset 0px 0px 5px 3px rgba(20, 20, 20, 1);
+            }
+
+            .on-screen-controls .left:active,
+            .on-screen-controls .right:active,
+            .on-screen-controls .down:active,
+            .on-screen-controls .shoot:active,
+            .on-screen-controls .jump:active {
+                opacity: 0.6;
+            }
+
+            .on-screen-controls .shoot {
+                width: 70px;
+                height: 60px;
+                box-sizing: border-box;
+                background-color: purple;
+                border: solid 2px #000;
+                touch-action: manipulation;
+                user-select: none;
+                -webkit-touch-callout: none;
+                margin: 15px 0 0 40px;
+                box-shadow: inset 0px 0px 5px 3px rgba(20, 20, 20, 1);
+                overflow: hidden;
+                text-align: center;
+                font-size: 30px;
+                line-height: 60px;
+                color: #000;
+            }
+
+            .on-screen-controls .jump {
+                width: 70px;
+                height: 60px;
+                box-sizing: border-box;
+                border: solid 2px #000;
+                background-color: orange;
+                touch-action: manipulation;
+                user-select: none;
+                -webkit-touch-callout: none;
+                margin: 15px 0 0 30px;
+                box-shadow: inset 0px 0px 5px 3px rgba(20, 20, 20, 1);
+                overflow: hidden;
+                text-align: center;
+                font-size: 30px;
+                line-height: 60px;
+                color: #000;
+            }
+
+            .pulse-bg {
+                animation: pulseBgKeyframes 2s ease-in-out;
+            }
+
+            .shake {
+                animation: shake-keyframes 0.6s cubic-bezier(0.36, 0.07, 0.19, 0.97) both;
+            }
+
+            @keyframes shake-keyframes {
+                10%,
+                90% {
+                    transform: translate3d(-1px, -2px, 0);
+                }
+
+                20%,
+                80% {
+                    transform: translate3d(2px, 0, -3px);
+                }
+
+                30%,
+                50%,
+                70% {
+                    transform: translate3d(-4px, 0, 3px);
+                }
+
+                40%,
+                60% {
+                    transform: translate3d(4px, 2px, 0);
+                }
+            }
+
+            @keyframes pulseBgKeyframes {
+                0%,
+                50%,
+                100% {
+                    opacity: 1;
+                }
+                25%,
+                75% {
+                    opacity: 0.2;
+                }
+            }
+        </style>
+    </head>
+    <body style="display: none;">
+        <div id="modal" class="modal">
+            <div id="modalTitle" class="modal-title"></div>
+            
+            <div id="modalManual" class="modal-manual">
+                <img src="images/manual.png" />
+            </div>
+
+            <input type="text" id="modalInput" maxlength="20" autofocus autocomplete="nickname"/>
+
+            <div id="modalTabs" class="tabs">
+                <div class="tab-selected" data-tab-id="stats">Stats</div>
+                <div class="tab" data-tab-id="leader-board">Leaderboard</div>
+                <div class="tab-content" data-tab-id="stats" style="display: block;">
+                    <div id="modalStats" class="modal-stats"></div>
+                </div>
+                <div class="tab-content" data-tab-id="leader-board">
+                    <div id="modalLeaderBoard" class="modal-leader-board"></div>
+                </div>
+            </div>
+
+            <button id="modalButton" class="modal-button">OK</button>
+        </div>
+
+        <div id="hud" class="hud">
+            <div id="collectable" class="collectable">
+                <div class="collectable-bg-dot"></div>
+                <div id="collectableCount" class="hud-text">0</div>
+            </div>
+            <span id="level" class="hud-text">Pixel Jump</span>
+            <span id="points" class="hud-text">0</span>
+            <div id="hearts" class="hearts">
+                <span class="heart"></span>
+                <span class="heart"></span>
+                <span class="heart"></span>
+            </div>
+            <div id="shield" class="shield-empty"></div>
+            <div id="audioButton" class="audio-button"></div>
+        </div>
+
+        <canvas class="responsive-canvas" id="responsiveCanvas"></canvas>
+
+        <div class="on-screen-controls" id="onScreenControls">
+            <div class="left" id="osLeft"></div>
+            <div class="down" id="osDown"></div>
+            <div class="right" id="osRight"></div>
+            <div class="shoot" id="osShoot">S</div>
+            <div class="jump" id="osJump">J</div>
+        </div>
+
+        <script src="scripts/game.js" type="module"></script>
+    </body>
+</html>
