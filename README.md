@@ -1,5 +1,5 @@
 # Boredom-hub-v2
-# Boredom Hub v2
+
 
 Boredom Hub is your ultimate online entertainment platform, featuring a collection of fun games, interactive tools, and an engaging chat system. Version 2 introduces a brand-new chat feature, allowing users to connect with each other in real-time!
 
