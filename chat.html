@@ -162,8 +162,6 @@
         <div id="dev-menu">
             <h3>Developer Menu</h3>
             <div id="user-list"></div>
-            <button onclick="banUser()">Ban User</button>
-            <button onclick="makeDev()">Make Dev</button>
         </div>
     </div>
 
@@ -276,15 +274,10 @@
             }
         });
 
-        channel.subscribe("report", (msg) => {
-            if (devs.includes(email)) {
-                alert(`User ${msg.data.target} has been reported by ${msg.data.reportedBy}.`);
-            }
-        });
-
         if (Notification.permission !== "granted") {
             Notification.requestPermission();
         }
     </script>
 </body>
 </html>
+
