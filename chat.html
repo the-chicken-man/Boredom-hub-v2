@@ -24,7 +24,7 @@
         <button onclick="signOut()">Sign Out</button>
         <br><br>
         <input type="text" id="usernameInput" placeholder="Enter Username">
-        <input type="text" id="messageInput" placeholder="Type a message" onkeydown="checkEnter(event)">
+        <input type="text" id="messageInput" placeholder="Type a message">
         <button onclick="sendMessage()">Send</button>
         <div id="chatBox" class="chat-box" style="max-height: 400px; overflow-y: auto;"></div>
     </div>
@@ -34,7 +34,6 @@
         const channel = ably.channels.get("chat-room");
 
         const bannedUsers = [];  // Store banned users by email
-        const devs = ["856030@dpsk12.net", "866537@dpsk12.net", "871491@dpsk12.net"]; // List of dev and head dev emails
         
         function signIn() {
             const email = prompt("Enter your email:");
@@ -95,7 +94,7 @@
             if (!email) return;
 
             // Only HEAD DEV and DEV can ban
-            if (!devs.includes(email)) {
+            if (email !== "856030@dpsk12.net" && !["866537@dpsk12.net", "871491@dpsk12.net"].includes(email)) {
                 alert("You do not have permission to ban users.");
                 return;
             }
@@ -122,24 +121,22 @@
                 
                 let extraStyle = "";
                 let roleTag = "";
+                let userEmail = data.user;
+
                 if (data.user === "856030@dpsk12.net") {
                     extraStyle = "color: red;";
                     roleTag = " <strong>[HEAD DEV]</strong>";
-                } else if (devs.includes(data.user)) {
+                    userEmail = ""; // Hide email for Head Dev
+                } else if (["866537@dpsk12.net", "871491@dpsk12.net"].includes(data.user)) {
                     extraStyle = "color: red;";
                     roleTag = " <strong>[DEV]</strong>";
+                    userEmail = ""; // Hide email for DEV
                 }
-                
-                messageElement.innerHTML = `<strong style="${extraStyle}">${data.username}${roleTag}:</strong> ${data.text}`;
+
+                messageElement.innerHTML = `<strong style="${extraStyle}">${data.username} (${userEmail})${roleTag}:</strong> ${data.text}`;
                 chatBox.appendChild(messageElement);
                 chatBox.scrollTop = chatBox.scrollHeight; // Auto-scroll to the latest message
             });
-        }
-
-        function checkEnter(event) {
-            if (event.key === "Enter") {
-                sendMessage();
-            }
         }
 
         window.onload = () => {
@@ -152,3 +149,4 @@
     </script>
 </body>
 </html>
+
