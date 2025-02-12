@@ -17,12 +17,6 @@ Boredom Hub is your ultimate online entertainment platform, featuring a collecti
 
 
 
-### 🐰 Rabbit AI *
-- An interactive AI assistant for fun conversations and recommendations.
-
-  ### New v2 style (looks sleek and gaming insipired)
-
-
 
 ## 🚀 Installation & Setup
 
