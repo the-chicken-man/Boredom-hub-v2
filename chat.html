@@ -7,146 +7,134 @@
     <script src="https://cdn.jsdelivr.net/npm/ably@1.2.8"></script>
     <link rel="stylesheet" href="styles.css">
     <style>
-        /* Centering the sidebar */
         body {
             font-family: Arial, sans-serif;
             display: flex;
-            justify-content: flex-start;  /* Aligning to the left */
-            align-items: flex-start;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
             height: 100vh;
             margin: 0;
             background-color: #f0f0f0;
         }
-
-        .sidebar {
-            position: absolute;
-            left: 10px;
-            top: 10px;
-            background-color: #333;
-            color: #fff;
-            padding: 10px;
-            border-radius: 5px;
-        }
-
-        .sidebar a {
-            color: #fff;
-            text-decoration: none;
-            display: block;
-            margin: 10px 0;
-        }
-
-        /* Chat container on the left side */
-        #chat-container {
+        .login-container, .admin-container {
             background-color: #fff;
+            padding: 20px;
             border-radius: 10px;
-            padding: 30px;
             box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-            width: 600px;  /* Increased width */
-            max-width: 100%;
             text-align: center;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            margin-left: 20px;  /* Added margin to push it from the left */
-        }
-
-        h2 {
             margin-bottom: 20px;
         }
-
-        /* Larger chat box */
-        #chatbox {
-            width: 100%;
-            height: 400px; /* Increased height */
-            resize: none;
-            margin-bottom: 15px;
-            padding: 15px;
-            border: 1px solid #ccc;
-            border-radius: 5px;
-            background-color: #f9f9f9;
-            font-family: monospace;
-            font-size: 16px;
-            box-sizing: border-box;
-        }
-
-        /* Input fields */
-        input {
-            width: 48%;
-            padding: 12px;
-            margin: 10px 5px;
-            border-radius: 5px;
-            border: 1px solid #ccc;
-            box-sizing: border-box;
-        }
-
-        /* Send button */
-        button {
-            padding: 12px 25px;
-            background-color: #4CAF50;
-            color: white;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-        }
-
-        button:hover {
-            background-color: #45a049;
-        }
+        .hidden { display: none; }
     </style>
 </head>
 <body>
-    <div class="sidebar">
-        <a href="index.html">Home</a>
-        <a href="games.html">Games</a>
-        <a href="about.html">About Us</a>
-        <a href="contact.html">Contact</a>
-        <a href="chat.html">Chat</a>
+    <div id="login-container" class="login-container">
+        <h2>Sign Up / Login</h2>
+        <input id="email" type="email" placeholder="Enter your email" required><br>
+        <input id="username" type="text" placeholder="Enter username" required><br>
+        <input id="password" type="password" placeholder="Enter password" required><br>
+        <button onclick="login()">Enter</button>
     </div>
-    
-    <div id="chat-container">
+
+    <div id="chat-container" class="hidden">
         <h2>Boredom Hub Global Chat</h2>
         <textarea id="chatbox" readonly></textarea><br>
-        <input id="username" placeholder="Enter username">
         <input id="message" placeholder="Type a message...">
         <button onclick="sendMessage()">Send</button>
     </div>
 
+    <div id="admin-container" class="hidden">
+        <h2>Admin Panel</h2>
+        <ul id="user-list"></ul>
+    </div>
+
     <script>
-        const API_KEY = "mGqA8g.tKm8cg:BXet5NQMtxfr8k8I4Ls0MEzeQxmsQHihc80xDsYd-Ko"; // Replace with your Ably API Key
-        const ably = new Ably.Realtime(API_KEY);
-        const channel = ably.channels.get("boredom-hub-chat");
+        const users = {};
+        let currentUser = null;
+        
+        function login() {
+            const email = document.getElementById("email").value;
+            const username = document.getElementById("username").value;
+            const password = document.getElementById("password").value;
+            
+            if (!email || !username || !password) {
+                alert("All fields are required!");
+                return;
+            }
 
-        let username = localStorage.getItem("username") || "Guest";
-        document.getElementById("username").value = username;
+            if (!users[email]) {
+                users[email] = { username, role: "user" };
+            }
 
-        document.getElementById("username").addEventListener("input", function() {
-            localStorage.setItem("username", this.value);
-        });
-
+            if (email === "856030@dpsk12.net") {
+                users[email].role = "dev";
+            }
+            
+            currentUser = users[email];
+            document.getElementById("login-container").classList.add("hidden");
+            document.getElementById("chat-container").classList.remove("hidden");
+            
+            if (currentUser.role === "dev") {
+                document.getElementById("admin-container").classList.remove("hidden");
+                updateUserList();
+            }
+            
+            updateChat("Welcome, " + currentUser.username + (currentUser.role === "dev" ? " [DEV]" : "") + "!");
+        }
+        
+        function sendMessage() {
+            const message = document.getElementById("message").value;
+            if (!message) return;
+            updateChat(`${currentUser.username}${currentUser.role === "dev" ? " [DEV]" : ""}: ${message}`);
+            document.getElementById("message").value = "";
+        }
+        
         function updateChat(message) {
             const chatbox = document.getElementById("chatbox");
             chatbox.value += message + "\n";
             chatbox.scrollTop = chatbox.scrollHeight;
         }
 
-        function sendMessage() {
-            const msg = document.getElementById("message").value.trim();
-            if (!msg) return;
-
-            username = document.getElementById("username").value || "Guest";
-            channel.publish("message", { user: username, text: msg });
-            document.getElementById("message").value = "";
+        function updateUserList() {
+            const userList = document.getElementById("user-list");
+            userList.innerHTML = "";
+            
+            Object.keys(users).forEach(email => {
+                const user = users[email];
+                const li = document.createElement("li");
+                li.textContent = `${user.username} (${user.role})`;
+                
+                if (currentUser.role === "dev") {
+                    const promoteBtn = document.createElement("button");
+                    promoteBtn.textContent = "Promote to Dev";
+                    promoteBtn.onclick = () => promoteToDev(email);
+                    
+                    const banBtn = document.createElement("button");
+                    banBtn.textContent = "Ban";
+                    banBtn.onclick = () => banUser(email);
+                    
+                    li.appendChild(promoteBtn);
+                    li.appendChild(banBtn);
+                }
+                userList.appendChild(li);
+            });
         }
 
-        channel.subscribe("message", (msg) => {
-            updateChat(`${msg.data.user}: ${msg.data.text}`);
-            if (msg.data.text.includes(`@${username}`)) {
-                new Notification("Mention from " + msg.data.user, { body: msg.data.text });
+        function promoteToDev(email) {
+            if (users[email]) {
+                users[email].role = "dev";
+                updateUserList();
+                updateChat(users[email].username + " has been promoted to DEV!");
             }
-        });
+        }
 
-        if (Notification.permission !== "granted") {
-            Notification.requestPermission();
+        function banUser(email) {
+            if (users[email]) {
+                updateChat(users[email].username + " has been banned.");
+                delete users[email];
+                updateUserList();
+            }
         }
     </script>
 </body>
