@@ -118,6 +118,31 @@
             color: red;
             font-weight: bold;
         }
+
+        .head-dev-tag {
+            color: gold;
+            font-weight: bold;
+        }
+
+        .ban-menu {
+            display: none;
+            margin-top: 20px;
+            padding: 10px;
+            background-color: #444;
+            border-radius: 5px;
+        }
+
+        .ban-menu input {
+            margin: 5px;
+            padding: 5px;
+            width: 100%;
+            font-size: 16px;
+            border-radius: 5px;
+        }
+
+        .ban-menu button {
+            margin-top: 10px;
+        }
     </style>
 </head>
 <body>
@@ -127,6 +152,12 @@
         <a href="about.html">About Us</a>
         <a href="contact.html">Contact</a>
         <a href="chat.html">Chat</a>
+
+        <div id="ban-menu" class="ban-menu">
+            <h3>Ban User</h3>
+            <input type="email" id="ban-email" placeholder="Enter email to ban">
+            <button onclick="banUser()">Ban</button>
+        </div>
     </div>
     
     <div id="auth-container">
@@ -167,12 +198,18 @@
             localStorage.setItem("email", email);
             document.getElementById("auth-container").style.display = "none";
             document.getElementById("chat-container").style.display = "flex";
+
+            // Show ban menu if the user is a dev or head dev
+            if (devs.includes(email)) {
+                document.getElementById("ban-menu").style.display = "block";
+            }
         }
 
         function updateChat(message, user) {
             const chatbox = document.getElementById("chatbox");
             const devTag = devs.includes(user) ? `<span class="dev-tag">[DEV]</span> ` : '';
-            chatbox.value += devTag + message + "\n";
+            const headDevTag = user === HEAD_DEV_EMAIL ? `<span class="head-dev-tag">[HEAD DEV]</span> ` : '';
+            chatbox.value += headDevTag + devTag + message + "\n";
             chatbox.scrollTop = chatbox.scrollHeight;
         }
 
@@ -184,30 +221,19 @@
             document.getElementById("message").value = "";
         }
 
-        function banUser(targetEmail) {
-            if (!devs.includes(email)) return;
-            if (!bannedUsers.includes(targetEmail)) {
-                bannedUsers.push(targetEmail);
-                localStorage.setItem("bannedUsers", JSON.stringify(bannedUsers));
+        function banUser() {
+            const targetEmail = document.getElementById("ban-email").value.trim();
+            if (!targetEmail || !targetEmail.includes("@")) {
+                alert("Please enter a valid email to ban.");
+                return;
             }
-        }
-
-        function promoteToDev(targetEmail) {
-            if (email !== HEAD_DEV_EMAIL && !devs.includes(email)) return;
-            if (!devs.includes(targetEmail)) {
-                devs.push(targetEmail);
-                localStorage.setItem("devs", JSON.stringify(devs));
+            if (bannedUsers.includes(targetEmail)) {
+                alert("This user is already banned.");
+                return;
             }
-        }
-
-        function removeDev(targetEmail) {
-            if (email !== HEAD_DEV_EMAIL) return;
-            devs = devs.filter(dev => dev !== targetEmail);
-            localStorage.setItem("devs", JSON.stringify(devs));
-        }
-
-        function reportUser(targetEmail) {
-            channel.publish("report", { reportedBy: email, target: targetEmail });
+            bannedUsers.push(targetEmail);
+            localStorage.setItem("bannedUsers", JSON.stringify(bannedUsers));
+            alert(`${targetEmail} has been banned.`);
         }
 
         channel.subscribe("message", (msg) => {
