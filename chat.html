@@ -25,7 +25,7 @@
         <input type="text" id="usernameInput" placeholder="Enter Username">
         <input type="text" id="messageInput" placeholder="Type a message">
         <button onclick="sendMessage()">Send</button>
-        <div id="chatBox" class="chat-box"></div>
+        <div id="chatBox" class="chat-box" style="max-height: 400px; overflow-y: auto;"></div>
     </div>
     
     <script>
@@ -49,7 +49,6 @@
             sessionStorage.setItem("userEmail", email);
             sessionStorage.setItem("username", username);
             document.getElementById("authStatus").innerText = `Logged in as ${email}`;
-            loadMessages();
         }
 
         function signOut() {
@@ -59,7 +58,7 @@
         }
 
         function isCleanUsername(username) {
-            const badWords = ["fuck", "shit", "bitch", "asshole", "bastard", "dick", "cunt", "damn", "crap", "piss"];
+            const badWords = ["fuck", "shit", "bitch", "asshole", "bastard", "dick", "cunt", "damn", "piss"];
             return !badWords.some(word => username.toLowerCase().includes(word));
         }
 
@@ -74,13 +73,17 @@
             }
 
             channel.publish("message", { text: messageInput, user: email, username: username });
+            document.getElementById("messageInput").value = "";
         }
 
         function loadMessages() {
             channel.subscribe("message", (message) => {
+                if (document.getElementById(`msg-${message.id}`)) return; // Prevent duplicate messages
+                
                 const chatBox = document.getElementById("chatBox");
                 const data = message.data;
                 const messageElement = document.createElement("p");
+                messageElement.id = `msg-${message.id}`;
                 
                 let extraStyle = "";
                 let roleTag = "";
@@ -94,6 +97,7 @@
                 
                 messageElement.innerHTML = `<strong style="${extraStyle}">${data.username} (${data.user})${roleTag}:</strong> ${data.text}`;
                 chatBox.appendChild(messageElement);
+                chatBox.scrollTop = chatBox.scrollHeight; // Auto-scroll to the latest message
             });
         }
 
@@ -101,8 +105,8 @@
             const email = sessionStorage.getItem("userEmail");
             if (email) {
                 document.getElementById("authStatus").innerText = `Logged in as ${email}`;
-                loadMessages();
             }
+            loadMessages();
         };
     </script>
 </body>
