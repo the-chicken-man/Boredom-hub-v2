@@ -99,13 +99,15 @@
                 return;
             }
 
-            const emailToBan = message.split(" ")[1];
+            const messageParts = message.split(" ");
+            const emailToBan = messageParts[1];  // Extract the email to ban
+
             if (!emailToBan) {
                 alert("Please provide an email to ban.");
                 return;
             }
 
-            bannedUsers.push(emailToBan);
+            bannedUsers.push(emailToBan); // Add the email to the banned list
             alert(`${emailToBan} has been banned.`);
             channel.publish("message", { text: `${emailToBan} has been banned from the chat.`, user: "System", username: "System" });
         }
@@ -149,4 +151,3 @@
     </script>
 </body>
 </html>
-
