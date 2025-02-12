@@ -7,55 +7,6 @@
     <title>Boredom Hub - Chat</title>
     <link rel="stylesheet" href="styles.css">
     <script src="https://cdn.ably.com/lib/ably.min-1.js"></script>
-    <style>
-        body {
-            display: flex;
-            height: 100vh;
-            margin: 0;
-        }
-        .sidebar {
-            width: 200px;
-            background: #333;
-            color: white;
-            padding: 20px;
-            height: 100vh;
-            position: fixed;
-            left: 0;
-            top: 0;
-        }
-        .sidebar a {
-            color: white;
-            display: block;
-            padding: 10px;
-            text-decoration: none;
-        }
-        .sidebar a:hover {
-            background: #555;
-        }
-        .content {
-            margin-left: 220px;
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            width: calc(100% - 220px);
-        }
-        .chat-container {
-            display: flex;
-            justify-content: flex-end;
-            width: 100%;
-        }
-        .chat-box {
-            width: 300px;
-            height: 400px;
-            border: 1px solid #ccc;
-            overflow-y: scroll;
-            padding: 10px;
-            background: #f9f9f9;
-            margin-right: 20px;
-        }
-    </style>
 </head>
 <body>
     <div class="sidebar">
@@ -64,6 +15,7 @@
         <a href="about.html" target="_blank">About Us</a>
         <a href="contact.html" target="_blank">Contact</a>   
         <a href="chat.html" target="_blank">Chat</a>
+        <a href="rabbitAI.html" target="_blank">rabbitAI calculator</a>
     </div>
     <div class="content">
         <h2>Chat Room</h2>
@@ -74,14 +26,15 @@
         <input type="text" id="usernameInput" placeholder="Enter Username">
         <input type="text" id="messageInput" placeholder="Type a message">
         <button onclick="sendMessage()">Send</button>
-        <div class="chat-container">
-            <div id="chatBox" class="chat-box"></div>
-        </div>
+        <div id="chatBox" class="chat-box" style="max-height: 400px; overflow-y: auto;"></div>
     </div>
+    
     <script>
-        const ably = new Ably.Realtime("YOUR_ABLY_API_KEY");
+        const ably = new Ably.Realtime("mGqA8g.tKm8cg:BXet5NQMtxfr8k8I4Ls0MEzeQxmsQHihc80xDsYd-Ko");
         const channel = ably.channels.get("chat-room");
 
+        const bannedUsers = [];  // Store banned users by email
+        
         function signIn() {
             const email = prompt("Enter your email:");
             const username = prompt("Enter your username:");
@@ -99,7 +52,6 @@
             sessionStorage.setItem("userEmail", email);
             sessionStorage.setItem("username", username);
             document.getElementById("authStatus").innerText = `Logged in as ${email}`;
-            loadMessages();
         }
 
         function signOut() {
@@ -109,7 +61,7 @@
         }
 
         function isCleanUsername(username) {
-            const badWords = ["fuck", "shit", "bitch", "asshole", "bastard", "dick", "cunt", "damn", "crap", "piss"];
+            const badWords = ["fuck", "shit", "bitch", "asshole", "bastard", "dick", "cunt", "damn", "piss"];
             return !badWords.some(word => username.toLowerCase().includes(word));
         }
 
@@ -123,14 +75,49 @@
                 return;
             }
 
+            if (bannedUsers.includes(email)) {
+                alert("You are banned from the chat.");
+                return;
+            }
+
+            if (messageInput.startsWith("/ban")) {
+                handleBanCommand(messageInput);
+                return;
+            }
+
             channel.publish("message", { text: messageInput, user: email, username: username });
+            document.getElementById("messageInput").value = "";
+        }
+
+        function handleBanCommand(message) {
+            const email = sessionStorage.getItem("userEmail");
+            if (!email) return;
+
+            // Only HEAD DEV and DEV can ban
+            if (email !== "856030@dpsk12.net" && !["866537@dpsk12.net", "871491@dpsk12.net"].includes(email)) {
+                alert("You do not have permission to ban users.");
+                return;
+            }
+
+            const emailToBan = message.split(" ")[1];
+            if (!emailToBan) {
+                alert("Please provide an email to ban.");
+                return;
+            }
+
+            bannedUsers.push(emailToBan);
+            alert(`${emailToBan} has been banned.`);
+            channel.publish("message", { text: `${emailToBan} has been banned from the chat.`, user: "System", username: "System" });
         }
 
         function loadMessages() {
             channel.subscribe("message", (message) => {
+                if (document.getElementById(`msg-${message.id}`)) return; // Prevent duplicate messages
+                
                 const chatBox = document.getElementById("chatBox");
                 const data = message.data;
                 const messageElement = document.createElement("p");
+                messageElement.id = `msg-${message.id}`;
                 
                 let extraStyle = "";
                 let roleTag = "";
@@ -144,6 +131,7 @@
                 
                 messageElement.innerHTML = `<strong style="${extraStyle}">${data.username} (${data.user})${roleTag}:</strong> ${data.text}`;
                 chatBox.appendChild(messageElement);
+                chatBox.scrollTop = chatBox.scrollHeight; // Auto-scroll to the latest message
             });
         }
 
@@ -151,8 +139,8 @@
             const email = sessionStorage.getItem("userEmail");
             if (email) {
                 document.getElementById("authStatus").innerText = `Logged in as ${email}`;
-                loadMessages();
             }
+            loadMessages();
         };
     </script>
 </body>
