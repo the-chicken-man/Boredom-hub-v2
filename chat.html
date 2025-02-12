@@ -7,30 +7,15 @@
     <script src="https://cdn.jsdelivr.net/npm/ably@1.2.8"></script>
     <link rel="stylesheet" href="styles.css">
     <style>
-        body {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-            margin: 0;
-            background-color: #f0f0f0;
-        }
-
         #chat-container {
+            position: absolute;
+            right: 20px;
+            top: 50px;
             width: 500px;
             height: 500px;
             display: flex;
             flex-direction: column;
-            align-items: center;
-            justify-content: flex-start;
-            background: #ffffff;
-            border: 2px solid #ccc;
-            border-radius: 10px;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-            padding: 20px;
-            display: none;
         }
-
         #chatbox {
             width: 100%;
             height: 400px;
@@ -41,106 +26,31 @@
             font-size: 16px;
             overflow-y: auto;
             resize: none;
-            margin-bottom: 10px;
         }
-
         #input-container {
             display: flex;
             flex-direction: column;
-            width: 100%;
         }
-
-        #auth-container {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            background-color: #fff;
-            border-radius: 10px;
-            padding: 20px;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-            text-align: center;
-        }
-
-        #auth-container input,
-        #auth-container button {
-            margin: 10px 0;
-        }
-
-        button {
-            padding: 10px 20px;
-            font-size: 16px;
-            cursor: pointer;
-            background-color: #4CAF50;
-            color: white;
-            border: none;
-            border-radius: 5px;
-            transition: background-color 0.3s;
-        }
-
-        button:hover {
-            background-color: #45a049;
-        }
-
-        input {
-            padding: 10px;
-            width: 100%;
-            font-size: 16px;
-            border-radius: 5px;
-            border: 1px solid #ccc;
-        }
-
-        .sidebar {
-            position: absolute;
-            top: 20px;
-            left: 20px;
-            display: flex;
-            flex-direction: column;
-            background-color: #333;
-            padding: 20px;
-            border-radius: 10px;
-        }
-
-        .sidebar a {
-            color: white;
-            text-decoration: none;
-            padding: 10px 20px;
-            margin: 5px 0;
-            border-radius: 5px;
-            transition: background-color 0.3s;
-        }
-
-        .sidebar a:hover {
-            background-color: #575757;
-        }
-
-        .dev-tag {
+        .dev-banner {
             color: red;
-            font-weight: bold;
         }
-
-        .head-dev-tag {
-            color: gold;
-            font-weight: bold;
+        .head-dev-banner {
+            color: darkred;
         }
-
-        .ban-menu {
-            display: none;
-            margin-top: 20px;
+        #dev-menu {
+            position: absolute;
+            top: 100px;
+            right: 20px;
+            background: rgba(0, 0, 0, 0.7);
+            color: white;
             padding: 10px;
-            background-color: #444;
-            border-radius: 5px;
+            width: 300px;
+            display: flex;
+            flex-direction: column;
+            overflow-y: auto;
+            height: 400px;
         }
-
-        .ban-menu input {
-            margin: 5px;
-            padding: 5px;
-            width: 100%;
-            font-size: 16px;
-            border-radius: 5px;
-        }
-
-        .ban-menu button {
+        #dev-menu button {
             margin-top: 10px;
         }
     </style>
@@ -152,12 +62,6 @@
         <a href="about.html">About Us</a>
         <a href="contact.html">Contact</a>
         <a href="chat.html">Chat</a>
-
-        <div id="ban-menu" class="ban-menu">
-            <h3>Ban User</h3>
-            <input type="email" id="ban-email" placeholder="Enter email to ban">
-            <button onclick="banUser()">Ban</button>
-        </div>
     </div>
     
     <div id="auth-container">
@@ -166,7 +70,7 @@
         <button onclick="authenticateUser()">Enter Chat</button>
     </div>
     
-    <div id="chat-container">
+    <div id="chat-container" style="display:none;">
         <h2>Boredom Hub Global Chat</h2>
         <textarea id="chatbox" readonly></textarea>
         <div id="input-container">
@@ -174,6 +78,13 @@
             <input id="message" placeholder="Type a message...">
             <button onclick="sendMessage()">Send</button>
         </div>
+    </div>
+
+    <div id="dev-menu" style="display:none;">
+        <h3>Developer Menu</h3>
+        <div id="user-list"></div>
+        <button onclick="banUser()">Ban User</button>
+        <button onclick="makeDev()">Make Dev</button>
     </div>
 
     <script>
@@ -198,35 +109,39 @@
             localStorage.setItem("email", email);
             document.getElementById("auth-container").style.display = "none";
             document.getElementById("chat-container").style.display = "flex";
-
-            // Show ban menu if the user is a dev or head dev
-            if (devs.includes(email)) {
-                document.getElementById("ban-menu").style.display = "block";
+            
+            if (email === HEAD_DEV_EMAIL) {
+                document.getElementById("dev-menu").style.display = "flex";
             }
         }
 
         function updateChat(message, user) {
             const chatbox = document.getElementById("chatbox");
-            const devTag = devs.includes(user) ? `<span class="dev-tag">[DEV]</span> ` : '';
-            const headDevTag = user === HEAD_DEV_EMAIL ? `<span class="head-dev-tag">[HEAD DEV]</span> ` : '';
-            chatbox.value += headDevTag + devTag + message + "\n";
+            let userDisplay = user;
+            if (devs.includes(user)) {
+                userDisplay = `<span class="dev-banner">${user}</span>`;
+            }
+            if (user === HEAD_DEV_EMAIL) {
+                userDisplay = `<span class="head-dev-banner">${user}</span>`;
+            }
+            chatbox.value += `${userDisplay}: ${message}\n`;
             chatbox.scrollTop = chatbox.scrollHeight;
         }
 
         function sendMessage() {
             const msg = document.getElementById("message").value.trim();
             if (!msg) return;
-            const username = document.getElementById("username").value || "Guest";
-            channel.publish("message", { user: username, text: msg, email: email });
-            document.getElementById("message").value = "";
+            const user = document.getElementById("username").value.trim() || email;
+            
+            // Publish the message to the channel
+            channel.publish("message", { msg, user });
+
+            // Clear the input field
+            document.getElementById("message").value = '';
         }
 
-        function banUser() {
-            const targetEmail = document.getElementById("ban-email").value.trim();
-            if (!targetEmail || !targetEmail.includes("@")) {
-                alert("Please enter a valid email to ban.");
-                return;
-            }
+        function banUser(targetEmail) {
+            if (!devs.includes(email)) return;
             if (bannedUsers.includes(targetEmail)) {
                 alert("This user is already banned.");
                 return;
@@ -234,12 +149,22 @@
             bannedUsers.push(targetEmail);
             localStorage.setItem("bannedUsers", JSON.stringify(bannedUsers));
             alert(`${targetEmail} has been banned.`);
+            // Update chat to reflect banning
+            channel.publish("message", { msg: `${targetEmail} was banned from chat`, user: "System" });
+        }
+
+        function makeDev(targetEmail) {
+            if (email !== HEAD_DEV_EMAIL) return;
+            if (!devs.includes(targetEmail)) {
+                devs.push(targetEmail);
+                localStorage.setItem("devs", JSON.stringify(devs));
+                alert(`${targetEmail} has been promoted to Developer.`);
+            }
         }
 
         channel.subscribe("message", (msg) => {
-            updateChat(`${msg.data.user}: ${msg.data.text}`, msg.data.user);
-            if (msg.data.text.includes(`@${document.getElementById("username").value}`)) {
-                new Notification("Mention from " + msg.data.user, { body: msg.data.text });
+            if (!bannedUsers.includes(msg.data.user)) {
+                updateChat(msg.data.msg, msg.data.user);
             }
         });
 
