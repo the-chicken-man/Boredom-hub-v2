@@ -7,15 +7,30 @@
     <script src="https://cdn.jsdelivr.net/npm/ably@1.2.8"></script>
     <link rel="stylesheet" href="styles.css">
     <style>
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            background-color: #f0f0f0;
+        }
+
         #chat-container {
-            position: absolute;
-            right: 20px;
-            top: 50px;
             width: 500px;
             height: 500px;
             display: flex;
             flex-direction: column;
+            align-items: center;
+            justify-content: flex-start;
+            background: #ffffff;
+            border: 2px solid #ccc;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            padding: 20px;
+            display: none;
         }
+
         #chatbox {
             width: 100%;
             height: 400px;
@@ -26,10 +41,82 @@
             font-size: 16px;
             overflow-y: auto;
             resize: none;
+            margin-bottom: 10px;
         }
+
         #input-container {
             display: flex;
             flex-direction: column;
+            width: 100%;
+        }
+
+        #auth-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            background-color: #fff;
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            text-align: center;
+        }
+
+        #auth-container input,
+        #auth-container button {
+            margin: 10px 0;
+        }
+
+        button {
+            padding: 10px 20px;
+            font-size: 16px;
+            cursor: pointer;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            transition: background-color 0.3s;
+        }
+
+        button:hover {
+            background-color: #45a049;
+        }
+
+        input {
+            padding: 10px;
+            width: 100%;
+            font-size: 16px;
+            border-radius: 5px;
+            border: 1px solid #ccc;
+        }
+
+        .sidebar {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            display: flex;
+            flex-direction: column;
+            background-color: #333;
+            padding: 20px;
+            border-radius: 10px;
+        }
+
+        .sidebar a {
+            color: white;
+            text-decoration: none;
+            padding: 10px 20px;
+            margin: 5px 0;
+            border-radius: 5px;
+            transition: background-color 0.3s;
+        }
+
+        .sidebar a:hover {
+            background-color: #575757;
+        }
+
+        .dev-tag {
+            color: red;
+            font-weight: bold;
         }
     </style>
 </head>
@@ -48,7 +135,7 @@
         <button onclick="authenticateUser()">Enter Chat</button>
     </div>
     
-    <div id="chat-container" style="display:none;">
+    <div id="chat-container">
         <h2>Boredom Hub Global Chat</h2>
         <textarea id="chatbox" readonly></textarea>
         <div id="input-container">
@@ -82,9 +169,10 @@
             document.getElementById("chat-container").style.display = "flex";
         }
 
-        function updateChat(message) {
+        function updateChat(message, user) {
             const chatbox = document.getElementById("chatbox");
-            chatbox.value += message + "\n";
+            const devTag = devs.includes(user) ? `<span class="dev-tag">[DEV]</span> ` : '';
+            chatbox.value += devTag + message + "\n";
             chatbox.scrollTop = chatbox.scrollHeight;
         }
 
@@ -105,7 +193,7 @@
         }
 
         function promoteToDev(targetEmail) {
-            if (email !== HEAD_DEV_EMAIL) return;
+            if (email !== HEAD_DEV_EMAIL && !devs.includes(email)) return;
             if (!devs.includes(targetEmail)) {
                 devs.push(targetEmail);
                 localStorage.setItem("devs", JSON.stringify(devs));
@@ -123,7 +211,7 @@
         }
 
         channel.subscribe("message", (msg) => {
-            updateChat(`${msg.data.user}: ${msg.data.text}`);
+            updateChat(`${msg.data.user}: ${msg.data.text}`, msg.data.user);
             if (msg.data.text.includes(`@${document.getElementById("username").value}`)) {
                 new Notification("Mention from " + msg.data.user, { body: msg.data.text });
             }
