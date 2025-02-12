@@ -193,6 +193,7 @@
             if (email === HEAD_DEV_EMAIL) {
                 document.getElementById("dev-menu").style.display = "flex";
             }
+            updateUserList();
         }
 
         function updateChat(message, user) {
@@ -231,6 +232,8 @@
             alert(`${targetEmail} has been banned.`);
             // Update chat to reflect banning
             channel.publish("message", { msg: `${targetEmail} was banned from chat`, user: "System" });
+
+            updateUserList(); // Refresh user list
         }
 
         function makeDev(targetEmail) {
@@ -240,6 +243,31 @@
                 localStorage.setItem("devs", JSON.stringify(devs));
                 alert(`${targetEmail} has been promoted to Developer.`);
             }
+
+            updateUserList(); // Refresh user list
+        }
+
+        function updateUserList() {
+            const userListDiv = document.getElementById("user-list");
+            userListDiv.innerHTML = ""; // Clear current list
+            const allUsers = JSON.parse(localStorage.getItem("allUsers")) || [];
+
+            allUsers.forEach(user => {
+                const userDiv = document.createElement("div");
+                userDiv.innerHTML = `${user.username} (${user.email})`;
+
+                const banButton = document.createElement("button");
+                banButton.textContent = "Ban";
+                banButton.onclick = () => banUser(user.email);
+
+                const makeDevButton = document.createElement("button");
+                makeDevButton.textContent = "Make Dev";
+                makeDevButton.onclick = () => makeDev(user.email);
+
+                userDiv.appendChild(banButton);
+                userDiv.appendChild(makeDevButton);
+                userListDiv.appendChild(userDiv);
+            });
         }
 
         channel.subscribe("message", (msg) => {
