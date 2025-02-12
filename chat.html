@@ -24,7 +24,7 @@
         <button onclick="signOut()">Sign Out</button>
         <br><br>
         <input type="text" id="usernameInput" placeholder="Enter Username">
-        <input type="text" id="messageInput" placeholder="Type a message">
+        <input type="text" id="messageInput" placeholder="Type a message" onkeydown="checkEnter(event)">
         <button onclick="sendMessage()">Send</button>
         <div id="chatBox" class="chat-box" style="max-height: 400px; overflow-y: auto;"></div>
     </div>
@@ -34,6 +34,7 @@
         const channel = ably.channels.get("chat-room");
 
         const bannedUsers = [];  // Store banned users by email
+        const devs = ["856030@dpsk12.net", "866537@dpsk12.net", "871491@dpsk12.net"]; // List of dev and head dev emails
         
         function signIn() {
             const email = prompt("Enter your email:");
@@ -94,7 +95,7 @@
             if (!email) return;
 
             // Only HEAD DEV and DEV can ban
-            if (email !== "856030@dpsk12.net" && !["866537@dpsk12.net", "871491@dpsk12.net"].includes(email)) {
+            if (!devs.includes(email)) {
                 alert("You do not have permission to ban users.");
                 return;
             }
@@ -124,15 +125,21 @@
                 if (data.user === "856030@dpsk12.net") {
                     extraStyle = "color: red;";
                     roleTag = " <strong>[HEAD DEV]</strong>";
-                } else if (["866537@dpsk12.net", "871491@dpsk12.net"].includes(data.user)) {
+                } else if (devs.includes(data.user)) {
                     extraStyle = "color: red;";
                     roleTag = " <strong>[DEV]</strong>";
                 }
                 
-                messageElement.innerHTML = `<strong style="${extraStyle}">${data.username} (${data.user})${roleTag}:</strong> ${data.text}`;
+                messageElement.innerHTML = `<strong style="${extraStyle}">${data.username}${roleTag}:</strong> ${data.text}`;
                 chatBox.appendChild(messageElement);
                 chatBox.scrollTop = chatBox.scrollHeight; // Auto-scroll to the latest message
             });
+        }
+
+        function checkEnter(event) {
+            if (event.key === "Enter") {
+                sendMessage();
+            }
         }
 
         window.onload = () => {
@@ -145,151 +152,3 @@
     </script>
 </body>
 </html>
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <link rel="icon" type="image/png" href="https://cdn-icons-png.flaticon.com/512/8595/8595483.png">
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Boredom Hub - Chat</title>
-    <link rel="stylesheet" href="styles.css">
-    <script src="https://cdn.ably.com/lib/ably.min-1.js"></script>
-</head>
-<body>
-    <div class="sidebar">
-        <a href="index.html" target="_blank">Home</a>
-        <a href="games.html" target="_blank">Games</a>
-        <a href="about.html" target="_blank">About Us</a>
-        <a href="contact.html" target="_blank">Contact</a>   
-        <a href="chat.html" target="_blank">Chat</a>
-        <a href="rabbitAI.html" target="_blank">rabbitAI calculator</a>
-    </div>
-    <div class="content">
-        <h2>Chat Room</h2>
-        <p id="authStatus">Not logged in</p>
-        <button onclick="signIn()">Sign In</button>
-        <button onclick="signOut()">Sign Out</button>
-        <br><br>
-        <input type="text" id="usernameInput" placeholder="Enter Username">
-        <input type="text" id="messageInput" placeholder="Type a message">
-        <button onclick="sendMessage()">Send</button>
-        <div id="chatBox" class="chat-box" style="max-height: 400px; overflow-y: auto;"></div>
-    </div>
-    
-    <script>
-        const ably = new Ably.Realtime("mGqA8g.tKm8cg:BXet5NQMtxfr8k8I4Ls0MEzeQxmsQHihc80xDsYd-Ko");
-        const channel = ably.channels.get("chat-room");
-
-        const bannedUsers = [];  // Store banned users by email
-        
-        function signIn() {
-            const email = prompt("Enter your email:");
-            const username = prompt("Enter your username:");
-            
-            if (!email || !username) {
-                alert("Email and username are required!");
-                return;
-            }
-            
-            if (!isCleanUsername(username)) {
-                alert("Username contains inappropriate words!");
-                return;
-            }
-            
-            sessionStorage.setItem("userEmail", email);
-            sessionStorage.setItem("username", username);
-            document.getElementById("authStatus").innerText = `Logged in as ${email}`;
-        }
-
-        function signOut() {
-            sessionStorage.removeItem("userEmail");
-            sessionStorage.removeItem("username");
-            document.getElementById("authStatus").innerText = "Not logged in";
-        }
-
-        function isCleanUsername(username) {
-            const badWords = ["fuck", "shit", "bitch", "asshole", "bastard", "dick", "cunt", "damn", "piss"];
-            return !badWords.some(word => username.toLowerCase().includes(word));
-        }
-
-        function sendMessage() {
-            const messageInput = document.getElementById("messageInput").value;
-            const email = sessionStorage.getItem("userEmail");
-            const username = sessionStorage.getItem("username");
-            
-            if (!email || !username) {
-                alert("You must be signed in to send messages.");
-                return;
-            }
-
-            if (bannedUsers.includes(email)) {
-                alert("You are banned from the chat.");
-                return;
-            }
-
-            if (messageInput.startsWith("/ban")) {
-                handleBanCommand(messageInput);
-                return;
-            }
-
-            channel.publish("message", { text: messageInput, user: email, username: username });
-            document.getElementById("messageInput").value = "";
-        }
-
-        function handleBanCommand(message) {
-            const email = sessionStorage.getItem("userEmail");
-            if (!email) return;
-
-            // Only HEAD DEV and DEV can ban
-            if (email !== "856030@dpsk12.net" && !["866537@dpsk12.net", "871491@dpsk12.net"].includes(email)) {
-                alert("You do not have permission to ban users.");
-                return;
-            }
-
-            const emailToBan = message.split(" ")[1];
-            if (!emailToBan) {
-                alert("Please provide an email to ban.");
-                return;
-            }
-
-            bannedUsers.push(emailToBan);
-            alert(`${emailToBan} has been banned.`);
-            channel.publish("message", { text: `${emailToBan} has been banned from the chat.`, user: "System", username: "System" });
-        }
-
-        function loadMessages() {
-            channel.subscribe("message", (message) => {
-                if (document.getElementById(`msg-${message.id}`)) return; // Prevent duplicate messages
-                
-                const chatBox = document.getElementById("chatBox");
-                const data = message.data;
-                const messageElement = document.createElement("p");
-                messageElement.id = `msg-${message.id}`;
-                
-                let extraStyle = "";
-                let roleTag = "";
-                if (data.user === "856030@dpsk12.net") {
-                    extraStyle = "color: red;";
-                    roleTag = " <strong>[HEAD DEV]</strong>";
-                } else if (["866537@dpsk12.net", "871491@dpsk12.net"].includes(data.user)) {
-                    extraStyle = "color: red;";
-                    roleTag = " <strong>[DEV]</strong>";
-                }
-                
-                messageElement.innerHTML = `<strong style="${extraStyle}">${data.username} (${data.user})${roleTag}:</strong> ${data.text}`;
-                chatBox.appendChild(messageElement);
-                chatBox.scrollTop = chatBox.scrollHeight; // Auto-scroll to the latest message
-            });
-        }
-
-        window.onload = () => {
-            const email = sessionStorage.getItem("userEmail");
-            if (email) {
-                document.getElementById("authStatus").innerText = `Logged in as ${email}`;
-            }
-            loadMessages();
-        };
-    </script>
-</body>
-</html>
-
