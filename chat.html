@@ -7,14 +7,12 @@
     <script src="https://cdn.jsdelivr.net/npm/ably@1.2.8"></script>
     <link rel="stylesheet" href="styles.css">
     <style>
-        /* Basic reset */
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
         }
 
-        /* Body and layout setup */
         body {
             display: flex;
             justify-content: center;
@@ -33,7 +31,7 @@
             padding: 15px;
             width: 250px;
             color: white;
-            display: none; /* Hidden by default, visible only for devs */
+            display: none;
             height: auto;
             max-height: 500px;
             overflow-y: auto;
@@ -256,10 +254,8 @@
         function sendNotification(mentionedUser, msg) {
             const mentionedUserObj = allUsers.find(user => user.username === mentionedUser);
             if (mentionedUserObj) {
-                // User is in the chat, send them the message
                 updateChat(`@${mentionedUser}: ${msg}`, "System");
             }
-            // If the user is not currently on the page, show a notification
             if (Notification.permission === "granted") {
                 new Notification(`${mentionedUser} mentioned you!`, { body: msg });
             }
@@ -312,5 +308,3 @@
     </script>
 </body>
 </html>
-
-
