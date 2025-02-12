@@ -7,18 +7,72 @@
     <script src="https://cdn.jsdelivr.net/npm/ably@1.2.8"></script>
     <link rel="stylesheet" href="styles.css">
     <style>
-        #chat-container {
+        /* Basic reset */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        /* Body and layout setup */
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background-color: #f0f0f0;
+            font-family: Arial, sans-serif;
+        }
+
+        /* Sidebar setup */
+        .sidebar {
             position: absolute;
-            right: 20px;
+            left: 20px;
             top: 50px;
-            width: 500px;
-            height: 500px;
+            background-color: #333;
+            padding: 15px;
+            width: 200px;
+            color: white;
+        }
+
+        .sidebar a {
+            color: white;
+            text-decoration: none;
+            margin-bottom: 10px;
+            display: block;
+        }
+
+        .sidebar a:hover {
+            background-color: #444;
+        }
+
+        /* Main content container */
+        #main-container {
             display: flex;
             flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            width: 100%;
+            height: 100%;
+            max-width: 800px;
+            background-color: white;
+            padding: 20px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            border-radius: 10px;
         }
+
+        /* Chat container styles */
+        #chat-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            width: 100%;
+            display: none;
+        }
+
         #chatbox {
             width: 100%;
-            height: 400px;
+            height: 300px;
             background: rgba(0, 0, 0, 0.5);
             color: white;
             border: none;
@@ -27,16 +81,22 @@
             overflow-y: auto;
             resize: none;
         }
+
         #input-container {
             display: flex;
             flex-direction: column;
+            width: 100%;
+            margin-top: 10px;
         }
+
         .dev-banner {
             color: red;
         }
+
         .head-dev-banner {
             color: darkred;
         }
+
         #dev-menu {
             position: absolute;
             top: 100px;
@@ -45,13 +105,31 @@
             color: white;
             padding: 10px;
             width: 300px;
-            display: flex;
+            display: none;
             flex-direction: column;
             overflow-y: auto;
             height: 400px;
         }
+
         #dev-menu button {
             margin-top: 10px;
+        }
+
+        /* Input and button styles */
+        input, button {
+            padding: 10px;
+            margin: 5px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+
+        button {
+            background-color: #4CAF50;
+            color: white;
+        }
+
+        button:hover {
+            background-color: #45a049;
         }
     </style>
 </head>
@@ -64,27 +142,29 @@
         <a href="chat.html">Chat</a>
     </div>
     
-    <div id="auth-container">
-        <h2>Enter your email to join the chat</h2>
-        <input type="email" id="email" placeholder="Enter email">
-        <button onclick="authenticateUser()">Enter Chat</button>
-    </div>
-    
-    <div id="chat-container" style="display:none;">
-        <h2>Boredom Hub Global Chat</h2>
-        <textarea id="chatbox" readonly></textarea>
-        <div id="input-container">
-            <input id="username" placeholder="Enter username">
-            <input id="message" placeholder="Type a message...">
-            <button onclick="sendMessage()">Send</button>
+    <div id="main-container">
+        <div id="auth-container">
+            <h2>Enter your email to join the chat</h2>
+            <input type="email" id="email" placeholder="Enter email">
+            <button onclick="authenticateUser()">Enter Chat</button>
         </div>
-    </div>
 
-    <div id="dev-menu" style="display:none;">
-        <h3>Developer Menu</h3>
-        <div id="user-list"></div>
-        <button onclick="banUser()">Ban User</button>
-        <button onclick="makeDev()">Make Dev</button>
+        <div id="chat-container">
+            <h2>Boredom Hub Global Chat</h2>
+            <textarea id="chatbox" readonly></textarea>
+            <div id="input-container">
+                <input id="username" placeholder="Enter username">
+                <input id="message" placeholder="Type a message...">
+                <button onclick="sendMessage()">Send</button>
+            </div>
+        </div>
+
+        <div id="dev-menu">
+            <h3>Developer Menu</h3>
+            <div id="user-list"></div>
+            <button onclick="banUser()">Ban User</button>
+            <button onclick="makeDev()">Make Dev</button>
+        </div>
     </div>
 
     <script>
