@@ -24,7 +24,31 @@
             font-family: Arial, sans-serif;
         }
 
-        /* Sidebar setup */
+        /* Sidebar for devs to see all users' emails */
+        .dev-sidebar {
+            position: absolute;
+            right: 20px;
+            top: 50px;
+            background-color: #333;
+            padding: 15px;
+            width: 250px;
+            color: white;
+            display: none; /* Hidden by default, visible only for devs */
+            height: auto;
+            max-height: 500px;
+            overflow-y: auto;
+        }
+
+        .dev-sidebar ul {
+            list-style-type: none;
+            padding: 0;
+        }
+
+        .dev-sidebar li {
+            margin-bottom: 10px;
+        }
+
+        /* Sidebar links */
         .sidebar {
             position: absolute;
             left: 20px;
@@ -97,24 +121,6 @@
             color: darkred;
         }
 
-        #dev-menu {
-            position: absolute;
-            top: 100px;
-            right: 20px;
-            background: rgba(0, 0, 0, 0.7);
-            color: white;
-            padding: 10px;
-            width: 300px;
-            display: none;
-            flex-direction: column;
-            overflow-y: auto;
-            height: 400px;
-        }
-
-        #dev-menu button {
-            margin-top: 10px;
-        }
-
         /* Input and button styles */
         input, button {
             padding: 10px;
@@ -158,11 +164,11 @@
                 <button onclick="sendMessage()">Send</button>
             </div>
         </div>
+    </div>
 
-        <div id="dev-menu">
-            <h3>Developer Menu</h3>
-            <div id="user-list"></div>
-        </div>
+    <div class="dev-sidebar" id="dev-sidebar">
+        <h3>Users in Chat</h3>
+        <ul id="user-list"></ul>
     </div>
 
     <script>
@@ -173,6 +179,7 @@
         let devs = JSON.parse(localStorage.getItem("devs")) || [HEAD_DEV_EMAIL];
         let bannedUsers = JSON.parse(localStorage.getItem("bannedUsers")) || [];
         let email = localStorage.getItem("email");
+        let allUsers = JSON.parse(localStorage.getItem("allUsers")) || [];
 
         function authenticateUser() {
             email = document.getElementById("email").value.trim();
@@ -188,11 +195,103 @@
             document.getElementById("auth-container").style.display = "none";
             document.getElementById("chat-container").style.display = "flex";
             
-            if (email === HEAD_DEV_EMAIL) {
-                document.getElementById("dev-menu").style.display = "flex";
+            if (!allUsers.find(user => user.email === email)) {
+                allUsers.push({ email, username: email.split('@')[0] });
+                localStorage.setItem("allUsers", JSON.stringify(allUsers));
             }
-            updateUserList();
+
+            updateChatHistory();
+            updateDevSidebar();
         }
+
+        function updateChatHistory() {
+            const chatbox = document.getElementById("chatbox");
+            chatbox.value = ""; // Clear chat history
+            allUsers.forEach(user => {
+                channel.publish("message", { msg: `${user.username} joined the chat.`, user: "System" });
+            });
+        }
+
+        function updateDevSidebar() {
+            if (devs.includes(email)) {
+                document.getElementById("dev-sidebar").style.display = "block";
+                const userList = document.getElementById("user-list");
+                userList.innerHTML = ''; // Clear previous list
+                allUsers.forEach(user => {
+                    const li = document.createElement("li");
+                    li.textContent = `${user.username} (${user.email})`;
+                    userList.appendChild(li);
+                });
+            } else {
+                document.getElementById("dev-sidebar").style.display = "none";
+            }
+        }
+
+        function sendMessage() {
+            const msg = document.getElementById("message").value.trim();
+            if (!msg) return;
+            const user = document.getElementById("username").value.trim() || email;
+            
+            // If message includes a mention (@username)
+            const mentionMatch = msg.match(/@([a-zA-Z0-9_]+)/);
+            if (mentionMatch) {
+                const mentionedUser = mentionMatch[1];
+                sendNotification(mentionedUser, msg); // Send message to mentioned user
+            }
+
+            // Check for dev commands
+            if (msg.startsWith("/ban") && devs.includes(email)) {
+                handleBanCommand(msg);
+            } else if (msg.startsWith("/makeDev") && email === HEAD_DEV_EMAIL) {
+                handleMakeDevCommand(msg);
+            } else {
+                // Publish regular message
+                channel.publish("message", { msg, user });
+            }
+
+            // Clear the input field
+            document.getElementById("message").value = '';
+        }
+
+        function sendNotification(mentionedUser, msg) {
+            const mentionedUserObj = allUsers.find(user => user.username === mentionedUser);
+            if (mentionedUserObj) {
+                // User is in the chat, send them the message
+                updateChat(`@${mentionedUser}: ${msg}`, "System");
+            }
+            // If the user is not currently on the page, show a notification
+            if (Notification.permission === "granted") {
+                new Notification(`${mentionedUser} mentioned you!`, { body: msg });
+            }
+        }
+
+        function handleBanCommand(msg) {
+            const targetEmail = msg.split(" ")[1];
+            if (!targetEmail || bannedUsers.includes(targetEmail)) {
+                alert("Invalid email or user is already banned.");
+                return;
+            }
+            bannedUsers.push(targetEmail);
+            localStorage.setItem("bannedUsers", JSON.stringify(bannedUsers));
+            alert(`${targetEmail} has been banned.`);
+        }
+
+        function handleMakeDevCommand(msg) {
+            const targetEmail = msg.split(" ")[1];
+            if (!targetEmail || devs.includes(targetEmail)) {
+                alert("Invalid email or user is already a dev.");
+                return;
+            }
+            devs.push(targetEmail);
+            localStorage.setItem("devs", JSON.stringify(devs));
+            alert(`${targetEmail} has been made a dev.`);
+        }
+
+        channel.subscribe("message", (msg) => {
+            if (!bannedUsers.includes(msg.data.user)) {
+                updateChat(msg.data.msg, msg.data.user);
+            }
+        });
 
         function updateChat(message, user) {
             const chatbox = document.getElementById("chatbox");
@@ -207,77 +306,11 @@
             chatbox.scrollTop = chatbox.scrollHeight;
         }
 
-        function sendMessage() {
-            const msg = document.getElementById("message").value.trim();
-            if (!msg) return;
-            const user = document.getElementById("username").value.trim() || email;
-            
-            // Publish the message to the channel
-            channel.publish("message", { msg, user });
-
-            // Clear the input field
-            document.getElementById("message").value = '';
-        }
-
-        function banUser(targetEmail) {
-            if (!devs.includes(email)) return;
-            if (bannedUsers.includes(targetEmail)) {
-                alert("This user is already banned.");
-                return;
-            }
-            bannedUsers.push(targetEmail);
-            localStorage.setItem("bannedUsers", JSON.stringify(bannedUsers));
-            alert(`${targetEmail} has been banned.`);
-            // Update chat to reflect banning
-            channel.publish("message", { msg: `${targetEmail} was banned from chat`, user: "System" });
-
-            updateUserList(); // Refresh user list
-        }
-
-        function makeDev(targetEmail) {
-            if (email !== HEAD_DEV_EMAIL) return;
-            if (!devs.includes(targetEmail)) {
-                devs.push(targetEmail);
-                localStorage.setItem("devs", JSON.stringify(devs));
-                alert(`${targetEmail} has been promoted to Developer.`);
-            }
-
-            updateUserList(); // Refresh user list
-        }
-
-        function updateUserList() {
-            const userListDiv = document.getElementById("user-list");
-            userListDiv.innerHTML = ""; // Clear current list
-            const allUsers = JSON.parse(localStorage.getItem("allUsers")) || [];
-
-            allUsers.forEach(user => {
-                const userDiv = document.createElement("div");
-                userDiv.innerHTML = `${user.username} (${user.email})`;
-
-                const banButton = document.createElement("button");
-                banButton.textContent = "Ban";
-                banButton.onclick = () => banUser(user.email);
-
-                const makeDevButton = document.createElement("button");
-                makeDevButton.textContent = "Make Dev";
-                makeDevButton.onclick = () => makeDev(user.email);
-
-                userDiv.appendChild(banButton);
-                userDiv.appendChild(makeDevButton);
-                userListDiv.appendChild(userDiv);
-            });
-        }
-
-        channel.subscribe("message", (msg) => {
-            if (!bannedUsers.includes(msg.data.user)) {
-                updateChat(msg.data.msg, msg.data.user);
-            }
-        });
-
         if (Notification.permission !== "granted") {
             Notification.requestPermission();
         }
     </script>
 </body>
 </html>
+
 
