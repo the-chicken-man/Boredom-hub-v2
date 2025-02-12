@@ -32,6 +32,8 @@
         const ably = new Ably.Realtime("mGqA8g.tKm8cg:BXet5NQMtxfr8k8I4Ls0MEzeQxmsQHihc80xDsYd-Ko");
         const channel = ably.channels.get("chat-room");
 
+        const bannedUsers = [];  // Store banned users by email
+        
         function signIn() {
             const email = prompt("Enter your email:");
             const username = prompt("Enter your username:");
@@ -72,8 +74,39 @@
                 return;
             }
 
+            if (bannedUsers.includes(email)) {
+                alert("You are banned from the chat.");
+                return;
+            }
+
+            if (messageInput.startsWith("/ban")) {
+                handleBanCommand(messageInput);
+                return;
+            }
+
             channel.publish("message", { text: messageInput, user: email, username: username });
             document.getElementById("messageInput").value = "";
+        }
+
+        function handleBanCommand(message) {
+            const email = sessionStorage.getItem("userEmail");
+            if (!email) return;
+
+            // Only HEAD DEV and DEV can ban
+            if (email !== "856030@dpsk12.net" && !["866537@dpsk12.net", "871491@dpsk12.net"].includes(email)) {
+                alert("You do not have permission to ban users.");
+                return;
+            }
+
+            const emailToBan = message.split(" ")[1];
+            if (!emailToBan) {
+                alert("Please provide an email to ban.");
+                return;
+            }
+
+            bannedUsers.push(emailToBan);
+            alert(`${emailToBan} has been banned.`);
+            channel.publish("message", { text: `${emailToBan} has been banned from the chat.`, user: "System", username: "System" });
         }
 
         function loadMessages() {
