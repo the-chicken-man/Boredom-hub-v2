@@ -7,134 +7,136 @@
     <script src="https://cdn.jsdelivr.net/npm/ably@1.2.8"></script>
     <link rel="stylesheet" href="styles.css">
     <style>
-        body {
-            font-family: Arial, sans-serif;
+        #chat-container {
+            position: absolute;
+            right: 20px;
+            top: 50px;
+            width: 500px;
+            height: 500px;
             display: flex;
             flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            height: 100vh;
-            margin: 0;
-            background-color: #f0f0f0;
         }
-        .login-container, .admin-container {
-            background-color: #fff;
-            padding: 20px;
-            border-radius: 10px;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-            text-align: center;
-            margin-bottom: 20px;
+        #chatbox {
+            width: 100%;
+            height: 400px;
+            background: rgba(0, 0, 0, 0.5);
+            color: white;
+            border: none;
+            padding: 10px;
+            font-size: 16px;
+            overflow-y: auto;
+            resize: none;
         }
-        .hidden { display: none; }
+        #input-container {
+            display: flex;
+            flex-direction: column;
+        }
     </style>
 </head>
 <body>
-    <div id="login-container" class="login-container">
-        <h2>Sign Up / Login</h2>
-        <input id="email" type="email" placeholder="Enter your email" required><br>
-        <input id="username" type="text" placeholder="Enter username" required><br>
-        <input id="password" type="password" placeholder="Enter password" required><br>
-        <button onclick="login()">Enter</button>
+    <div class="sidebar">
+        <a href="index.html">Home</a>
+        <a href="games.html">Games</a>
+        <a href="about.html">About Us</a>
+        <a href="contact.html">Contact</a>
+        <a href="chat.html">Chat</a>
     </div>
-
-    <div id="chat-container" class="hidden">
+    
+    <div id="auth-container">
+        <h2>Enter your email to join the chat</h2>
+        <input type="email" id="email" placeholder="Enter email">
+        <button onclick="authenticateUser()">Enter Chat</button>
+    </div>
+    
+    <div id="chat-container" style="display:none;">
         <h2>Boredom Hub Global Chat</h2>
-        <textarea id="chatbox" readonly></textarea><br>
-        <input id="message" placeholder="Type a message...">
-        <button onclick="sendMessage()">Send</button>
-    </div>
-
-    <div id="admin-container" class="hidden">
-        <h2>Admin Panel</h2>
-        <ul id="user-list"></ul>
+        <textarea id="chatbox" readonly></textarea>
+        <div id="input-container">
+            <input id="username" placeholder="Enter username">
+            <input id="message" placeholder="Type a message...">
+            <button onclick="sendMessage()">Send</button>
+        </div>
     </div>
 
     <script>
-        const users = {};
-        let currentUser = null;
-        
-        function login() {
-            const email = document.getElementById("email").value;
-            const username = document.getElementById("username").value;
-            const password = document.getElementById("password").value;
-            
-            if (!email || !username || !password) {
-                alert("All fields are required!");
+        const API_KEY = "mGqA8g.tKm8cg:BXet5NQMtxfr8k8I4Ls0MEzeQxmsQHihc80xDsYd-Ko";
+        const ably = new Ably.Realtime(API_KEY);
+        const channel = ably.channels.get("boredom-hub-chat");
+        const HEAD_DEV_EMAIL = "856030@dpsk12.net";
+        let devs = JSON.parse(localStorage.getItem("devs")) || [HEAD_DEV_EMAIL];
+        let bannedUsers = JSON.parse(localStorage.getItem("bannedUsers")) || [];
+        let email = localStorage.getItem("email");
+
+        function authenticateUser() {
+            email = document.getElementById("email").value.trim();
+            if (!email.includes("@") || !email.includes(".")) {
+                alert("Please enter a valid email.");
                 return;
             }
-
-            if (!users[email]) {
-                users[email] = { username, role: "user" };
+            if (bannedUsers.includes(email)) {
+                alert("You are banned from this chat.");
+                return;
             }
-
-            if (email === "856030@dpsk12.net") {
-                users[email].role = "dev";
-            }
-            
-            currentUser = users[email];
-            document.getElementById("login-container").classList.add("hidden");
-            document.getElementById("chat-container").classList.remove("hidden");
-            
-            if (currentUser.role === "dev") {
-                document.getElementById("admin-container").classList.remove("hidden");
-                updateUserList();
-            }
-            
-            updateChat("Welcome, " + currentUser.username + (currentUser.role === "dev" ? " [DEV]" : "") + "!");
+            localStorage.setItem("email", email);
+            document.getElementById("auth-container").style.display = "none";
+            document.getElementById("chat-container").style.display = "flex";
         }
-        
-        function sendMessage() {
-            const message = document.getElementById("message").value;
-            if (!message) return;
-            updateChat(`${currentUser.username}${currentUser.role === "dev" ? " [DEV]" : ""}: ${message}`);
-            document.getElementById("message").value = "";
-        }
-        
+
         function updateChat(message) {
             const chatbox = document.getElementById("chatbox");
             chatbox.value += message + "\n";
             chatbox.scrollTop = chatbox.scrollHeight;
         }
 
-        function updateUserList() {
-            const userList = document.getElementById("user-list");
-            userList.innerHTML = "";
-            
-            Object.keys(users).forEach(email => {
-                const user = users[email];
-                const li = document.createElement("li");
-                li.textContent = `${user.username} (${user.role})`;
-                
-                if (currentUser.role === "dev") {
-                    const promoteBtn = document.createElement("button");
-                    promoteBtn.textContent = "Promote to Dev";
-                    promoteBtn.onclick = () => promoteToDev(email);
-                    
-                    const banBtn = document.createElement("button");
-                    banBtn.textContent = "Ban";
-                    banBtn.onclick = () => banUser(email);
-                    
-                    li.appendChild(promoteBtn);
-                    li.appendChild(banBtn);
-                }
-                userList.appendChild(li);
-            });
+        function sendMessage() {
+            const msg = document.getElementById("message").value.trim();
+            if (!msg) return;
+            const username = document.getElementById("username").value || "Guest";
+            channel.publish("message", { user: username, text: msg, email: email });
+            document.getElementById("message").value = "";
         }
 
-        function promoteToDev(email) {
-            if (users[email]) {
-                users[email].role = "dev";
-                updateUserList();
-                updateChat(users[email].username + " has been promoted to DEV!");
+        function banUser(targetEmail) {
+            if (!devs.includes(email)) return;
+            if (!bannedUsers.includes(targetEmail)) {
+                bannedUsers.push(targetEmail);
+                localStorage.setItem("bannedUsers", JSON.stringify(bannedUsers));
             }
         }
 
-        function banUser(email) {
-            if (users[email]) {
-                updateChat(users[email].username + " has been banned.");
-                delete users[email];
-                updateUserList();
+        function promoteToDev(targetEmail) {
+            if (email !== HEAD_DEV_EMAIL) return;
+            if (!devs.includes(targetEmail)) {
+                devs.push(targetEmail);
+                localStorage.setItem("devs", JSON.stringify(devs));
             }
+        }
+
+        function removeDev(targetEmail) {
+            if (email !== HEAD_DEV_EMAIL) return;
+            devs = devs.filter(dev => dev !== targetEmail);
+            localStorage.setItem("devs", JSON.stringify(devs));
+        }
+
+        function reportUser(targetEmail) {
+            channel.publish("report", { reportedBy: email, target: targetEmail });
+        }
+
+        channel.subscribe("message", (msg) => {
+            updateChat(`${msg.data.user}: ${msg.data.text}`);
+            if (msg.data.text.includes(`@${document.getElementById("username").value}`)) {
+                new Notification("Mention from " + msg.data.user, { body: msg.data.text });
+            }
+        });
+
+        channel.subscribe("report", (msg) => {
+            if (devs.includes(email)) {
+                alert(`User ${msg.data.target} has been reported by ${msg.data.reportedBy}.`);
+            }
+        });
+
+        if (Notification.permission !== "granted") {
+            Notification.requestPermission();
         }
     </script>
 </body>
