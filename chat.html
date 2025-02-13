@@ -28,12 +28,11 @@
         <button onclick="sendMessage()">Send</button>
         <div id="chatBox" class="chat-box" style="max-height: 400px; overflow-y: auto;"></div>
     </div>
-    
     <script>
     const ably = new Ably.Realtime("mGqA8g.tKm8cg:BXet5NQMtxfr8k8I4Ls0MEzeQxmsQHihc80xDsYd-Ko");
     const channel = ably.channels.get("chat-room");
 
-    let mutedUsers = {}; // Stores muted users and expiration timestamps
+    let mutedUsers = JSON.parse(localStorage.getItem("mutedUsers")) || {}; // Load muted users from storage
 
     function signIn() {
         const email = prompt("Enter your email:");
@@ -105,6 +104,7 @@
         }
 
         mutedUsers[emailToMute] = Date.now() + 15 * 60 * 1000; // Mute expires in 15 minutes
+        localStorage.setItem("mutedUsers", JSON.stringify(mutedUsers)); // Save to storage
 
         alert(`${emailToMute} has been muted for 15 minutes.`);
         channel.publish("message", { text: `${emailToMute} has been muted for 15 minutes.`, user: "System", username: "System" });
@@ -112,6 +112,7 @@
         // Auto-unmute after 15 minutes
         setTimeout(() => {
             delete mutedUsers[emailToMute];
+            localStorage.setItem("mutedUsers", JSON.stringify(mutedUsers)); // Update storage
             channel.publish("message", { text: `${emailToMute} is now unmuted.`, user: "System", username: "System" });
         }, 15 * 60 * 1000);
     }
@@ -120,6 +121,12 @@
         channel.subscribe("message", (message) => {
             const data = message.data;
             const chatBox = document.getElementById("chatBox");
+
+            // **Block messages from muted users**
+            if (mutedUsers[data.user] && Date.now() < mutedUsers[data.user]) {
+                return; // Stop the message from appearing
+            }
+
             const messageElement = document.createElement("p");
 
             let extraStyle = "";
@@ -151,6 +158,7 @@
         loadMessages();
     };
 </script>
+
 
 
 </body>
