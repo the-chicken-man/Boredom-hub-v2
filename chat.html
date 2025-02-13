@@ -28,11 +28,12 @@
         <button onclick="sendMessage()">Send</button>
         <div id="chatBox" class="chat-box" style="max-height: 400px; overflow-y: auto;"></div>
     </div>
-    <script>
+
+<script>
     const ably = new Ably.Realtime("mGqA8g.tKm8cg:BXet5NQMtxfr8k8I4Ls0MEzeQxmsQHihc80xDsYd-Ko");
     const channel = ably.channels.get("chat-room");
 
-    let mutedUsers = JSON.parse(localStorage.getItem("mutedUsers")) || {}; // Load muted users from storage
+    let mutedUsers = JSON.parse(localStorage.getItem("mutedUsers")) || {}; // Store muted users
 
     function signIn() {
         const email = prompt("Enter your email:");
@@ -64,18 +65,19 @@
             return;
         }
 
-        // **Block muted users from sending messages**
+        // **Check if user is muted before sending**
         if (mutedUsers[email] && Date.now() < mutedUsers[email]) {
             alert("You are muted and cannot send messages.");
             return;
         }
 
-        // **Check for mute command**
+        // **Handle mute command**
         if (messageInput.startsWith("/mute")) {
             handleMuteCommand(messageInput);
             return;
         }
 
+        // **Send message**
         channel.publish("message", { text: messageInput, user: email, username: username });
         document.getElementById("messageInput").value = "";
     }
@@ -124,7 +126,8 @@
 
             // **Block messages from muted users**
             if (mutedUsers[data.user] && Date.now() < mutedUsers[data.user]) {
-                return; // Stop the message from appearing
+                console.log(`Blocked message from muted user: ${data.user}`);
+                return;
             }
 
             const messageElement = document.createElement("p");
@@ -158,8 +161,6 @@
         loadMessages();
     };
 </script>
-
-
 
 </body>
 </html>
