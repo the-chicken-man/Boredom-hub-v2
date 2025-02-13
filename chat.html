@@ -33,9 +33,9 @@
     const ably = new Ably.Realtime("mGqA8g.tKm8cg:BXet5NQMtxfr8k8I4Ls0MEzeQxmsQHihc80xDsYd-Ko");
     const channel = ably.channels.get("chat-room");
 
-    let mutedUsers = JSON.parse(localStorage.getItem("mutedUsers")) || {}; // Store muted users
-    const modEmails = ["872654@dpsk12.net", "878197@dpsk12.net", "871341@dpsk12.net"]; // Mods
-    const devEmails = ["856030@dpsk12.net", "866537@dpsk12.net", "871491@dpsk12.net"]; // Devs (including Head Dev)
+    const modEmails = ["872654@dpsk12.net", "878197@dpsk12.net", "871341@dpsk12.net"];
+    const devEmails = ["856030@dpsk12.net", "866537@dpsk12.net", "871491@dpsk12.net"];
+    const headDevEmail = "856030@dpsk12.net";
 
     function signIn() {
         const email = prompt("Enter your email:");
@@ -67,102 +67,67 @@
             return;
         }
 
-        // **Check if user is muted before sending**
-        if (mutedUsers[email] && Date.now() < mutedUsers[email]) {
-            alert("You are muted and cannot send messages.");
-            return;
+        if (messageInput) {
+            channel.publish("message", { text: messageInput, user: email, username: username });
+            document.getElementById("messageInput").value = "";
         }
-
-        // **Handle mute command**
-        if (messageInput.startsWith("/mute")) {
-            handleMuteCommand(messageInput);
-            return;
-        }
-
-        // **Send message**
-        channel.publish("message", { text: messageInput, user: email, username: username });
-        document.getElementById("messageInput").value = "";
-    }
-
-    function handleMuteCommand(message) {
-        const email = sessionStorage.getItem("userEmail");
-        if (!email) return;
-
-        // **Only Mods, Devs, and Head Dev can mute**
-        if (!modEmails.includes(email) && !devEmails.includes(email)) {
-            alert("You do not have permission to mute users.");
-            return;
-        }
-
-        const messageParts = message.split(" ");
-        if (messageParts.length < 2) {
-            alert("Usage: /mute <email>");
-            return;
-        }
-
-        const emailToMute = messageParts[1];
-
-        if (!emailToMute.includes("@")) {
-            alert("Invalid email format.");
-            return;
-        }
-
-        mutedUsers[emailToMute] = Date.now() + 15 * 60 * 1000; // Mute expires in 15 minutes
-        localStorage.setItem("mutedUsers", JSON.stringify(mutedUsers)); // Save to storage
-
-        alert(`${emailToMute} has been muted for 15 minutes.`);
-        channel.publish("message", { text: `${emailToMute} has been muted for 15 minutes.`, user: "System", username: "System" });
-
-        // Auto-unmute after 15 minutes
-        setTimeout(() => {
-            delete mutedUsers[emailToMute];
-            localStorage.setItem("mutedUsers", JSON.stringify(mutedUsers)); // Update storage
-            channel.publish("message", { text: `${emailToMute} is now unmuted.`, user: "System", username: "System" });
-        }, 15 * 60 * 1000);
     }
 
     function loadMessages() {
         channel.subscribe("message", (message) => {
             const data = message.data;
             const chatBox = document.getElementById("chatBox");
-
-            // **Block messages from muted users for everyone**
-            if (mutedUsers[data.user] && Date.now() < mutedUsers[data.user]) {
-                console.log(`Blocked message from muted user: ${data.user}`);
-                return; // Hide message for all users if the user is muted
-            }
-
             const messageElement = document.createElement("p");
 
             let extraStyle = "";
             let roleTag = "";
             let userEmail = data.user;
 
-            // **Handle mod users' display and email visibility**
             if (modEmails.includes(data.user)) {
                 extraStyle = "color: yellow;";
                 roleTag = " <strong>[MOD]</strong>";
-                // Only show email to devs or head dev
-                if (devEmails.includes(sessionStorage.getItem("userEmail"))) {
-                    userEmail = data.user;
-                } else {
-                    userEmail = "";
-                }
-            } else if (data.user === "856030@dpsk12.net") {
-                extraStyle = "color: red;";
+            } else if (data.user === headDevEmail) {
+                extraStyle = "color: blue; font-weight: bold;";
                 roleTag = " <strong>[HEAD DEV]</strong>";
-                userEmail = "";
             } else if (devEmails.includes(data.user)) {
                 extraStyle = "color: red;";
                 roleTag = " <strong>[DEV]</strong>";
-                userEmail = "";
             }
 
-            messageElement.innerHTML = `<strong style="${extraStyle}">${data.username} (${userEmail})${roleTag}:</strong> ${data.text}`;
+            messageElement.innerHTML = `<strong style="${extraStyle}">${data.username}${roleTag}:</strong> ${data.text}`;
             chatBox.appendChild(messageElement);
             chatBox.scrollTop = chatBox.scrollHeight;
+
+            // **Check for @mentions and send a notification**
+            checkMentions(data.text, data.username);
         });
     }
+
+    function checkMentions(message, sender) {
+        const username = sessionStorage.getItem("username");
+        if (message.includes(`@${username}`) && document.hidden) {
+            sendNotification(sender, message);
+        }
+    }
+
+    function sendNotification(sender, message) {
+        if (Notification.permission === "granted") {
+            new Notification(`${sender} mentioned you`, { body: message });
+        } else if (Notification.permission !== "denied") {
+            Notification.requestPermission().then(permission => {
+                if (permission === "granted") {
+                    new Notification(`${sender} mentioned you`, { body: message });
+                }
+            });
+        }
+    }
+
+    // **Allow pressing "Enter" to send messages**
+    document.getElementById("messageInput").addEventListener("keypress", function(event) {
+        if (event.key === "Enter") {
+            sendMessage();
+        }
+    });
 
     window.onload = () => {
         const email = sessionStorage.getItem("userEmail");
