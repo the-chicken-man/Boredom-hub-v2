@@ -33,9 +33,9 @@
     const ably = new Ably.Realtime("mGqA8g.tKm8cg:BXet5NQMtxfr8k8I4Ls0MEzeQxmsQHihc80xDsYd-Ko");
     const channel = ably.channels.get("chat-room");
 
-    let mutedUsers = {}; // Stores muted users
+    let mutedUsers = {}; // Stores globally muted users
     const modEmails = ["872654@dpsk12.net", "878197@dpsk12.net", "871341@dpsk12.net"]; // Mods
-    const devEmails = ["856030@dpsk12.net", "866537@dpsk12.net", "871491@dpsk12.net"]; // Devs (including Head Dev)
+    const devEmails = ["856030@dpsk12.net", "866537@dpsk12.net", "871491@dpsk12.net"]; // Devs
 
     function signIn() {
         const email = prompt("Enter your email:");
@@ -73,9 +73,13 @@
             return;
         }
 
-        // **Handle mute command**
+        // **Handle mute/unmute commands**
         if (messageInput.startsWith("/mute")) {
             handleMuteCommand(messageInput);
+            return;
+        }
+        if (messageInput.startsWith("/unmute")) {
+            handleUnmuteCommand(messageInput);
             return;
         }
 
@@ -108,9 +112,8 @@
         }
 
         mutedUsers[emailToMute] = true; // Mark user as muted
-
         alert(`${emailToMute} has been muted.`);
-        channel.publish("mute", { user: emailToMute }); // Notify everyone in the chat
+        channel.publish("mute", { user: emailToMute }); // Notify everyone in chat
     }
 
     function handleUnmuteCommand(message) {
@@ -137,7 +140,6 @@
         }
 
         delete mutedUsers[emailToUnmute]; // Remove user from mute list
-
         alert(`${emailToUnmute} has been unmuted.`);
         channel.publish("unmute", { user: emailToUnmute }); // Notify everyone
     }
@@ -147,9 +149,8 @@
             const data = message.data;
             const chatBox = document.getElementById("chatBox");
 
-            // **Block messages from muted users for everyone**
+            // **Block messages from muted users globally**
             if (mutedUsers[data.user]) {
-                console.log(`Blocked message from muted user: ${data.user}`);
                 return; // Hide message for all users
             }
 
@@ -177,13 +178,13 @@
             chatBox.scrollTop = chatBox.scrollHeight;
         });
 
-        // **Listen for mute updates**
+        // **Listen for mute/unmute updates**
         channel.subscribe("mute", (message) => {
-            mutedUsers[message.data.user] = true; // Apply mute globally
+            mutedUsers[message.data.user] = true;
         });
 
         channel.subscribe("unmute", (message) => {
-            delete mutedUsers[message.data.user]; // Remove mute globally
+            delete mutedUsers[message.data.user];
         });
     }
 
