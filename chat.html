@@ -7,27 +7,15 @@
     <title>Boredom Hub - Chat</title>
     <link rel="stylesheet" href="styles.css">
     <script src="https://cdn.ably.com/lib/ably.min-1.js"></script>
-    <style>
-        .troll-face {
-            position: fixed;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            width: 300px;
-            height: 300px;
-            display: none;
-            z-index: 1000;
-        }
-    </style>
 </head>
 <body>
     <div class="sidebar">
-        <a href="index.html" target="_blank">Home</a>
-        <a href="games.html" target="_blank">Games</a>
-        <a href="about.html" target="_blank">About Us</a>
-        <a href="contact.html" target="_blank">Contact</a>   
-        <a href="chat.html" target="_blank">Chat</a>
-        <a href="rabbitAI.html" target="_blank">rabbitAI calculator</a>
+        <a href="index.html">Home</a>
+        <a href="games.html">Games</a>
+        <a href="about.html">About Us</a>
+        <a href="contact.html">Contact</a>   
+        <a href="chat.html">Chat</a>
+        <a href="rabbitAI.html">rabbitAI calculator</a>
     </div>
     <div class="content">
         <h2>Chat Room</h2>
@@ -36,33 +24,36 @@
         <button onclick="signOut()">Sign Out</button>
         <br><br>
         <input type="text" id="usernameInput" placeholder="Enter Username">
-        <input type="text" id="messageInput" placeholder="Type a message">
+        <input type="text" id="messageInput" placeholder="Type a message" onkeypress="handleKeyPress(event)">
         <button onclick="sendMessage()">Send</button>
         <div id="chatBox" class="chat-box" style="max-height: 400px; overflow-y: auto;"></div>
+        <div id="imageOverlay" class="image-overlay" style="display: none;"></div>
     </div>
-    <img id="trollFace" class="troll-face" src="https://i.ebayimg.com/images/g/aP4AAOSw91pmoO11/s-l400.jpg="Troll Face">
 
 <script>
     const ably = new Ably.Realtime("mGqA8g.tKm8cg:BXet5NQMtxfr8k8I4Ls0MEzeQxmsQHihc80xDsYd-Ko");
     const channel = ably.channels.get("chat-room");
 
-    let mutedUsers = {}; 
+    let mutedUsers = {};
     const modEmails = ["872654@dpsk12.net", "878197@dpsk12.net", "871341@dpsk12.net"];
-    const devEmails = ["866537@dpsk12.net", "871491@dpsk12.net"];
-    const headDevEmail = "856030@dpsk12.net";
+    const devEmails = ["856030@dpsk12.net", "866537@dpsk12.net", "871491@dpsk12.net"];
 
     function signIn() {
         const email = prompt("Enter your email:");
         const username = prompt("Enter your username:");
-
         if (!email || !username) {
             alert("Email and username are required!");
             return;
         }
-
         sessionStorage.setItem("userEmail", email);
         sessionStorage.setItem("username", username);
         document.getElementById("authStatus").innerText = `Logged in as ${email}`;
+    }
+
+    function signOut() {
+        sessionStorage.removeItem("userEmail");
+        sessionStorage.removeItem("username");
+        document.getElementById("authStatus").innerText = "Not logged in";
     }
 
     function sendMessage() {
@@ -80,8 +71,8 @@
             return;
         }
 
-        if (messageInput.startsWith("/troll")) {
-            handleTrollCommand(email);
+        if (messageInput.startsWith("/image")) {
+            handleImageCommand(messageInput);
             return;
         }
 
@@ -89,53 +80,82 @@
         document.getElementById("messageInput").value = "";
     }
 
-    function handleTrollCommand(email) {
-        if (!modEmails.includes(email) && !devEmails.includes(email) && email !== headDevEmail) {
+    function handleKeyPress(event) {
+        if (event.key === "Enter") {
+            sendMessage();
+        }
+    }
+
+    function handleImageCommand(message) {
+        const email = sessionStorage.getItem("userEmail");
+        if (!email || (!modEmails.includes(email) && !devEmails.includes(email))) {
             alert("You do not have permission to use this command.");
             return;
         }
-        channel.publish("troll", {});
+
+        const messageParts = message.split(" ");
+        if (messageParts.length < 2) {
+            alert("Usage: /image <image_url>");
+            return;
+        }
+
+        const imageUrl = messageParts[1];
+        showImageOverlay(imageUrl);
+    }
+
+    function showImageOverlay(imageUrl) {
+        const overlay = document.getElementById("imageOverlay");
+        overlay.style.display = "block";
+        overlay.style.backgroundImage = `url(${imageUrl})`;
+        setTimeout(() => { overlay.style.display = "none"; }, 5000);
     }
 
     function loadMessages() {
         channel.subscribe("message", (message) => {
             const data = message.data;
+            const chatBox = document.getElementById("chatBox");
             if (mutedUsers[data.user]) return;
 
-            const chatBox = document.getElementById("chatBox");
             const messageElement = document.createElement("p");
-
             let extraStyle = "";
             let roleTag = "";
-            let displayName = `<strong>${data.username}</strong>`;
-
-            if (data.user === headDevEmail) {
-                extraStyle = "color: blue;";
-                roleTag = " <strong>[HEAD DEV]</strong>";
+            if (modEmails.includes(data.user)) {
+                extraStyle = "color: yellow;";
+                roleTag = " <strong>[MOD]</strong>";
             } else if (devEmails.includes(data.user)) {
                 extraStyle = "color: red;";
                 roleTag = " <strong>[DEV]</strong>";
-            } else if (modEmails.includes(data.user)) {
-                extraStyle = "color: yellow;";
-                roleTag = " <strong>[MOD]</strong>";
+            } else if (data.user === "819113@dpsk12.net") {
+                extraStyle = "color: green;";
+                roleTag = " <strong>[SIGMA]</strong>";
             }
 
-            messageElement.innerHTML = `<span style='${extraStyle}'>${displayName}${roleTag}:</span> ${data.text}`;
+            messageElement.innerHTML = `<strong style="${extraStyle}">${data.username} (${data.user})${roleTag}:</strong> ${data.text}`;
             chatBox.appendChild(messageElement);
             chatBox.scrollTop = chatBox.scrollHeight;
         });
-
-        channel.subscribe("troll", () => {
-            const trollFace = document.getElementById("trollFace");
-            trollFace.style.display = "block";
-            setTimeout(() => {
-                trollFace.style.display = "none";
-            }, 5000);
-        });
     }
 
-    window.onload = loadMessages;
+    window.onload = () => {
+        const email = sessionStorage.getItem("userEmail");
+        if (email) {
+            document.getElementById("authStatus").innerText = `Logged in as ${email}`;
+        }
+        loadMessages();
+    };
 </script>
+
+<style>
+    .image-overlay {
+        position: fixed;
+        top: 0; left: 0;
+        width: 100vw; height: 100vh;
+        background-size: cover;
+        background-position: center;
+        z-index: 9999;
+    }
+</style>
 
 </body>
 </html>
+
