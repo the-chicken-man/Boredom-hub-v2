@@ -76,6 +76,11 @@
             return;
         }
 
+        if (messageInput === "/troll") {
+            showImageOverlay("https://upload.wikimedia.org/wikipedia/en/9/9a/Trollface_non-free.png");
+            return;
+        }
+
         channel.publish("message", { text: messageInput, user: email, username: username });
         document.getElementById("messageInput").value = "";
     }
@@ -107,6 +112,8 @@
         const overlay = document.getElementById("imageOverlay");
         overlay.style.display = "block";
         overlay.style.backgroundImage = `url(${imageUrl})`;
+        overlay.style.backgroundSize = "cover";
+        overlay.style.backgroundPosition = "center";
         setTimeout(() => { overlay.style.display = "none"; }, 5000);
     }
 
