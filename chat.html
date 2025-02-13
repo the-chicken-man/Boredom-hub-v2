@@ -34,6 +34,8 @@
     const channel = ably.channels.get("chat-room");
 
     let mutedUsers = JSON.parse(localStorage.getItem("mutedUsers")) || {}; // Store muted users
+    const modEmails = ["872654@dpsk12.net", "878197@dpsk12.net", "871341@dpsk12.net"]; // Mods
+    const devEmails = ["856030@dpsk12.net", "866537@dpsk12.net", "871491@dpsk12.net"]; // Devs (including Head Dev)
 
     function signIn() {
         const email = prompt("Enter your email:");
@@ -86,8 +88,8 @@
         const email = sessionStorage.getItem("userEmail");
         if (!email) return;
 
-        // **Only Head Dev & Devs can mute**
-        if (email !== "856030@dpsk12.net" && !["866537@dpsk12.net", "871491@dpsk12.net"].includes(email)) {
+        // **Only Mods can mute**
+        if (!modEmails.includes(email)) {
             alert("You do not have permission to mute users.");
             return;
         }
@@ -136,12 +138,21 @@
             let roleTag = "";
             let userEmail = data.user;
 
-            // Hide emails of special users
-            if (data.user === "856030@dpsk12.net") {
+            // **Handle mod users' display and email visibility**
+            if (modEmails.includes(data.user)) {
+                extraStyle = "color: yellow;";
+                roleTag = " <strong>[MOD]</strong>";
+                // Only show email to devs or head dev
+                if (devEmails.includes(sessionStorage.getItem("userEmail"))) {
+                    userEmail = data.user;
+                } else {
+                    userEmail = "";
+                }
+            } else if (data.user === "856030@dpsk12.net") {
                 extraStyle = "color: red;";
                 roleTag = " <strong>[HEAD DEV]</strong>";
                 userEmail = "";
-            } else if (["866537@dpsk12.net", "871491@dpsk12.net"].includes(data.user)) {
+            } else if (devEmails.includes(data.user)) {
                 extraStyle = "color: red;";
                 roleTag = " <strong>[DEV]</strong>";
                 userEmail = "";
