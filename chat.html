@@ -126,10 +126,13 @@
             const data = message.data;
             const chatBox = document.getElementById("chatBox");
 
-            // **Block messages from muted users**
+            // **Block messages from muted users for everyone, not just the devs who muted them**
             if (mutedUsers[data.user] && Date.now() < mutedUsers[data.user]) {
-                console.log(`Blocked message from muted user: ${data.user}`);
-                return;
+                // Only allow devs and head dev to see muted user messages
+                if (!devEmails.includes(sessionStorage.getItem("userEmail"))) {
+                    console.log(`Blocked message from muted user: ${data.user}`);
+                    return;
+                }
             }
 
             const messageElement = document.createElement("p");
