@@ -36,6 +36,7 @@
     const modEmails = ["872654@dpsk12.net", "878197@dpsk12.net", "871341@dpsk12.net"];
     const devEmails = ["856030@dpsk12.net", "866537@dpsk12.net", "871491@dpsk12.net"];
     const headDevEmail = "856030@dpsk12.net";
+    const mutedUsers = new Map();
 
     function signIn() {
         const email = prompt("Enter your email:");
@@ -64,6 +65,24 @@
 
         if (!email || !username) {
             alert("You must be signed in to send messages.");
+            return;
+        }
+
+        if (mutedUsers.has(email) && mutedUsers.get(email) > Date.now()) {
+            alert("You are muted and cannot send messages.");
+            return;
+        }
+
+        if (messageInput.startsWith("/mut ")) {
+            if (modEmails.includes(email) || devEmails.includes(email) || email === headDevEmail) {
+                const targetEmail = messageInput.split(" ")[1];
+                if (targetEmail) {
+                    mutedUsers.set(targetEmail, Date.now() + 15 * 60 * 1000);
+                    alert(`${targetEmail} has been muted for 15 minutes.`);
+                }
+            } else {
+                alert("You do not have permission to mute users.");
+            }
             return;
         }
 
@@ -123,4 +142,5 @@
 
 </body>
 </html>
+
 
