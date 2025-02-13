@@ -33,7 +33,7 @@
         const ably = new Ably.Realtime("mGqA8g.tKm8cg:BXet5NQMtxfr8k8I4Ls0MEzeQxmsQHihc80xDsYd-Ko");
         const channel = ably.channels.get("chat-room");
 
-        const bannedUsers = [];  // Store banned users by email
+        const mutedUsers = {};  // Store muted users with timestamp
         
         function signIn() {
             const email = prompt("Enter your email:");
@@ -69,19 +69,20 @@
             const messageInput = document.getElementById("messageInput").value;
             const email = sessionStorage.getItem("userEmail");
             const username = sessionStorage.getItem("username");
-            
+
             if (!email || !username) {
                 alert("You must be signed in to send messages.");
                 return;
             }
 
-            if (bannedUsers.includes(email)) {
-                alert("You are banned from the chat.");
+            // Check if the user is muted
+            if (mutedUsers[email] && Date.now() - mutedUsers[email] < 15 * 60 * 1000) {
+                alert("You are muted and cannot send messages for now.");
                 return;
             }
 
-            if (messageInput.startsWith("/ban")) {
-                handleBanCommand(messageInput);
+            if (messageInput.startsWith("/mute")) {
+                handleMuteCommand(messageInput);
                 return;
             }
 
@@ -89,42 +90,46 @@
             document.getElementById("messageInput").value = "";
         }
 
-        function handleBanCommand(message) {
+        function handleMuteCommand(message) {
             const email = sessionStorage.getItem("userEmail");
             if (!email) return;
 
-            // Only HEAD DEV and DEV can ban
+            // Only HEAD DEV and DEV can mute
             if (email !== "856030@dpsk12.net" && !["866537@dpsk12.net", "871491@dpsk12.net"].includes(email)) {
-                alert("You do not have permission to ban users.");
+                alert("You do not have permission to mute users.");
                 return;
             }
 
             const messageParts = message.split(" ");
-            const emailToBan = messageParts[1];  // Extract the email to ban
+            const emailToMute = messageParts[1];  // Extract the email to mute
 
-            if (!emailToBan) {
-                alert("Please provide an email to ban.");
+            if (!emailToMute) {
+                alert("Please provide an email to mute.");
                 return;
             }
 
-            bannedUsers.push(emailToBan); // Add the email to the banned list
-            alert(`${emailToBan} has been banned.`);
-            channel.publish("message", { text: `${emailToBan} has been banned from the chat.`, user: "System", username: "System" });
+            mutedUsers[emailToMute] = Date.now(); // Store mute time
+            alert(`${emailToMute} has been muted for 15 minutes.`);
+            channel.publish("message", { text: `${emailToMute} has been muted for 15 minutes.`, user: "System", username: "System" });
+
+            // Automatically remove the mute after 15 minutes
+            setTimeout(() => {
+                delete mutedUsers[emailToMute];
+                channel.publish("message", { text: `${emailToMute} is now unmuted.`, user: "System", username: "System" });
+            }, 15 * 60 * 1000);
         }
 
         function loadMessages() {
             channel.subscribe("message", (message) => {
-                if (document.getElementById(`msg-${message.id}`)) return; // Prevent duplicate messages
-                
-                const chatBox = document.getElementById("chatBox");
                 const data = message.data;
+                const chatBox = document.getElementById("chatBox");
                 const messageElement = document.createElement("p");
-                messageElement.id = `msg-${message.id}`;
-                
+
                 let extraStyle = "";
                 let roleTag = "";
                 let userEmail = data.user;
 
+                // Check for special users and hide their email
                 if (data.user === "856030@dpsk12.net") {
                     extraStyle = "color: red;";
                     roleTag = " <strong>[HEAD DEV]</strong>";
