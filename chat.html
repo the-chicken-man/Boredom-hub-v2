@@ -33,9 +33,10 @@
     const ably = new Ably.Realtime("mGqA8g.tKm8cg:BXet5NQMtxfr8k8I4Ls0MEzeQxmsQHihc80xDsYd-Ko");
     const channel = ably.channels.get("chat-room");
 
-    let mutedUsers = {}; // Stores globally muted users
-    const modEmails = ["872654@dpsk12.net", "878197@dpsk12.net", "871341@dpsk12.net"]; // Mods
-    const devEmails = ["856030@dpsk12.net", "866537@dpsk12.net", "871491@dpsk12.net"]; // Devs
+    let mutedUsers = {}; 
+    const modEmails = ["872654@dpsk12.net", "878197@dpsk12.net", "871341@dpsk12.net"];
+    const devEmails = ["866537@dpsk12.net", "871491@dpsk12.net"];
+    const headDevEmail = "856030@dpsk12.net";
 
     function signIn() {
         const email = prompt("Enter your email:");
@@ -51,12 +52,6 @@
         document.getElementById("authStatus").innerText = `Logged in as ${email}`;
     }
 
-    function signOut() {
-        sessionStorage.removeItem("userEmail");
-        sessionStorage.removeItem("username");
-        document.getElementById("authStatus").innerText = "Not logged in";
-    }
-
     function sendMessage() {
         const messageInput = document.getElementById("messageInput").value.trim();
         const email = sessionStorage.getItem("userEmail");
@@ -67,13 +62,11 @@
             return;
         }
 
-        // **Check if user is muted before sending**
         if (mutedUsers[email]) {
             alert("You are muted and cannot send messages.");
             return;
         }
 
-        // **Handle mute/unmute commands**
         if (messageInput.startsWith("/mute")) {
             handleMuteCommand(messageInput);
             return;
@@ -83,102 +76,73 @@
             return;
         }
 
-        // **Send message**
         channel.publish("message", { text: messageInput, user: email, username: username });
         document.getElementById("messageInput").value = "";
     }
 
     function handleMuteCommand(message) {
         const email = sessionStorage.getItem("userEmail");
-        if (!email) return;
-
-        // **Only Mods, Devs, and Head Dev can mute**
-        if (!modEmails.includes(email) && !devEmails.includes(email)) {
+        if (!email || (!modEmails.includes(email) && !devEmails.includes(email) && email !== headDevEmail)) {
             alert("You do not have permission to mute users.");
             return;
         }
 
-        const messageParts = message.split(" ");
-        if (messageParts.length < 2) {
+        const emailToMute = message.split(" ")[1];
+        if (!emailToMute) {
             alert("Usage: /mute <email>");
             return;
         }
 
-        const emailToMute = messageParts[1];
-
-        if (!emailToMute.includes("@")) {
-            alert("Invalid email format.");
-            return;
-        }
-
-        mutedUsers[emailToMute] = true; // Mark user as muted
-        alert(`${emailToMute} has been muted.`);
-        channel.publish("mute", { user: emailToMute }); // Notify everyone in chat
+        mutedUsers[emailToMute] = true;
+        channel.publish("mute", { user: emailToMute });
     }
 
     function handleUnmuteCommand(message) {
         const email = sessionStorage.getItem("userEmail");
-        if (!email) return;
-
-        // **Only Mods, Devs, and Head Dev can unmute**
-        if (!modEmails.includes(email) && !devEmails.includes(email)) {
+        if (!email || (!modEmails.includes(email) && !devEmails.includes(email) && email !== headDevEmail)) {
             alert("You do not have permission to unmute users.");
             return;
         }
 
-        const messageParts = message.split(" ");
-        if (messageParts.length < 2) {
+        const emailToUnmute = message.split(" ")[1];
+        if (!emailToUnmute) {
             alert("Usage: /unmute <email>");
             return;
         }
 
-        const emailToUnmute = messageParts[1];
-
-        if (!emailToUnmute.includes("@")) {
-            alert("Invalid email format.");
-            return;
-        }
-
-        delete mutedUsers[emailToUnmute]; // Remove user from mute list
-        alert(`${emailToUnmute} has been unmuted.`);
-        channel.publish("unmute", { user: emailToUnmute }); // Notify everyone
+        delete mutedUsers[emailToUnmute];
+        channel.publish("unmute", { user: emailToUnmute });
     }
 
     function loadMessages() {
         channel.subscribe("message", (message) => {
             const data = message.data;
+            if (mutedUsers[data.user]) return;
+
             const chatBox = document.getElementById("chatBox");
-
-            // **Block messages from muted users globally**
-            if (mutedUsers[data.user]) {
-                return; // Hide message for all users
-            }
-
             const messageElement = document.createElement("p");
 
             let extraStyle = "";
             let roleTag = "";
-            let userEmail = data.user;
+            let displayName = `<strong>${data.username}</strong>`;
 
-            // **Handle mod users' display and email visibility**
-            if (modEmails.includes(data.user)) {
-                extraStyle = "color: yellow;";
-                roleTag = " <strong>[MOD]</strong>";
-                if (!devEmails.includes(sessionStorage.getItem("userEmail"))) {
-                    userEmail = "";
-                }
+            if (data.user === headDevEmail) {
+                extraStyle = "color: blue;";
+                roleTag = " <strong>[HEAD DEV]</strong>";
+                displayName = `<img src='https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcT1kbao_Z3IGQd8wH5dFu4F73HeBWm4d-N3GQ&s' width='20' height='20'> <strong>${data.username}</strong>`;
             } else if (devEmails.includes(data.user)) {
                 extraStyle = "color: red;";
                 roleTag = " <strong>[DEV]</strong>";
-                userEmail = "";
+            } else if (modEmails.includes(data.user)) {
+                extraStyle = "color: yellow;";
+                roleTag = " <strong>[MOD]</strong>";
             }
 
-            messageElement.innerHTML = `<strong style="${extraStyle}">${data.username} (${userEmail})${roleTag}:</strong> ${data.text}`;
+            messageElement.innerHTML = `<span style='${extraStyle}'>${displayName}${roleTag}:</span> ${data.text}`;
             chatBox.appendChild(messageElement);
             chatBox.scrollTop = chatBox.scrollHeight;
         });
 
-        // **Listen for mute/unmute updates**
         channel.subscribe("mute", (message) => {
             mutedUsers[message.data.user] = true;
         });
@@ -188,13 +152,7 @@
         });
     }
 
-    window.onload = () => {
-        const email = sessionStorage.getItem("userEmail");
-        if (email) {
-            document.getElementById("authStatus").innerText = `Logged in as ${email}`;
-        }
-        loadMessages();
-    };
+    window.onload = loadMessages;
 </script>
 
 </body>
