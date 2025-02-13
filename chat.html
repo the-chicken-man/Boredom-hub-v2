@@ -88,8 +88,8 @@
         const email = sessionStorage.getItem("userEmail");
         if (!email) return;
 
-        // **Only Mods can mute**
-        if (!modEmails.includes(email)) {
+        // **Only Mods, Devs, and Head Dev can mute**
+        if (!modEmails.includes(email) && !devEmails.includes(email)) {
             alert("You do not have permission to mute users.");
             return;
         }
