@@ -7,6 +7,18 @@
     <title>Boredom Hub - Chat</title>
     <link rel="stylesheet" href="styles.css">
     <script src="https://cdn.ably.com/lib/ably.min-1.js"></script>
+    <style>
+        .troll-face {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 300px;
+            height: 300px;
+            display: none;
+            z-index: 1000;
+        }
+    </style>
 </head>
 <body>
     <div class="sidebar">
@@ -28,6 +40,7 @@
         <button onclick="sendMessage()">Send</button>
         <div id="chatBox" class="chat-box" style="max-height: 400px; overflow-y: auto;"></div>
     </div>
+    <img id="trollFace" class="troll-face" src="https://upload.wikimedia.org/wikipedia/en/9/9a/Trollface_non-free.png" alt="Troll Face">
 
 <script>
     const ably = new Ably.Realtime("mGqA8g.tKm8cg:BXet5NQMtxfr8k8I4Ls0MEzeQxmsQHihc80xDsYd-Ko");
@@ -67,12 +80,8 @@
             return;
         }
 
-        if (messageInput.startsWith("/mute")) {
-            handleMuteCommand(messageInput);
-            return;
-        }
-        if (messageInput.startsWith("/unmute")) {
-            handleUnmuteCommand(messageInput);
+        if (messageInput.startsWith("/troll")) {
+            handleTrollCommand(email);
             return;
         }
 
@@ -80,38 +89,12 @@
         document.getElementById("messageInput").value = "";
     }
 
-    function handleMuteCommand(message) {
-        const email = sessionStorage.getItem("userEmail");
-        if (!email || (!modEmails.includes(email) && !devEmails.includes(email) && email !== headDevEmail)) {
-            alert("You do not have permission to mute users.");
+    function handleTrollCommand(email) {
+        if (!modEmails.includes(email) && !devEmails.includes(email) && email !== headDevEmail) {
+            alert("You do not have permission to use this command.");
             return;
         }
-
-        const emailToMute = message.split(" ")[1];
-        if (!emailToMute) {
-            alert("Usage: /mute <email>");
-            return;
-        }
-
-        mutedUsers[emailToMute] = true;
-        channel.publish("mute", { user: emailToMute });
-    }
-
-    function handleUnmuteCommand(message) {
-        const email = sessionStorage.getItem("userEmail");
-        if (!email || (!modEmails.includes(email) && !devEmails.includes(email) && email !== headDevEmail)) {
-            alert("You do not have permission to unmute users.");
-            return;
-        }
-
-        const emailToUnmute = message.split(" ")[1];
-        if (!emailToUnmute) {
-            alert("Usage: /unmute <email>");
-            return;
-        }
-
-        delete mutedUsers[emailToUnmute];
-        channel.publish("unmute", { user: emailToUnmute });
+        channel.publish("troll", {});
     }
 
     function loadMessages() {
@@ -129,7 +112,6 @@
             if (data.user === headDevEmail) {
                 extraStyle = "color: blue;";
                 roleTag = " <strong>[HEAD DEV]</strong>";
-                displayName = `<img src='https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcT1kbao_Z3IGQd8wH5dFu4F73HeBWm4d-N3GQ&s' width='20' height='20'> <strong>${data.username}</strong>`;
             } else if (devEmails.includes(data.user)) {
                 extraStyle = "color: red;";
                 roleTag = " <strong>[DEV]</strong>";
@@ -143,12 +125,12 @@
             chatBox.scrollTop = chatBox.scrollHeight;
         });
 
-        channel.subscribe("mute", (message) => {
-            mutedUsers[message.data.user] = true;
-        });
-
-        channel.subscribe("unmute", (message) => {
-            delete mutedUsers[message.data.user];
+        channel.subscribe("troll", () => {
+            const trollFace = document.getElementById("trollFace");
+            trollFace.style.display = "block";
+            setTimeout(() => {
+                trollFace.style.display = "none";
+            }, 5000);
         });
     }
 
