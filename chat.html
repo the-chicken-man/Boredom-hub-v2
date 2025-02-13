@@ -33,17 +33,17 @@
     const ably = new Ably.Realtime("mGqA8g.tKm8cg:BXet5NQMtxfr8k8I4Ls0MEzeQxmsQHihc80xDsYd-Ko");
     const channel = ably.channels.get("chat-room");
 
-    let mutedUsers = {}; // Object to store muted users and their expiration times
+    let mutedUsers = {}; // Stores muted users and expiration timestamps
 
     function signIn() {
         const email = prompt("Enter your email:");
         const username = prompt("Enter your username:");
-        
+
         if (!email || !username) {
             alert("Email and username are required!");
             return;
         }
-        
+
         sessionStorage.setItem("userEmail", email);
         sessionStorage.setItem("username", username);
         document.getElementById("authStatus").innerText = `Logged in as ${email}`;
@@ -65,19 +65,18 @@
             return;
         }
 
-        // **BLOCK muted users from sending messages**
+        // **Block muted users from sending messages**
         if (mutedUsers[email] && Date.now() < mutedUsers[email]) {
             alert("You are muted and cannot send messages.");
             return;
         }
 
-        // Check if it's a mute command
+        // **Check for mute command**
         if (messageInput.startsWith("/mute")) {
             handleMuteCommand(messageInput);
             return;
         }
 
-        // Send message to the chat
         channel.publish("message", { text: messageInput, user: email, username: username });
         document.getElementById("messageInput").value = "";
     }
@@ -86,7 +85,7 @@
         const email = sessionStorage.getItem("userEmail");
         if (!email) return;
 
-        // Only HEAD DEV and DEVS can mute
+        // **Only Head Dev & Devs can mute**
         if (email !== "856030@dpsk12.net" && !["866537@dpsk12.net", "871491@dpsk12.net"].includes(email)) {
             alert("You do not have permission to mute users.");
             return;
@@ -105,7 +104,7 @@
             return;
         }
 
-        mutedUsers[emailToMute] = Date.now() + 15 * 60 * 1000; // Set mute expiration time
+        mutedUsers[emailToMute] = Date.now() + 15 * 60 * 1000; // Mute expires in 15 minutes
 
         alert(`${emailToMute} has been muted for 15 minutes.`);
         channel.publish("message", { text: `${emailToMute} has been muted for 15 minutes.`, user: "System", username: "System" });
@@ -152,6 +151,7 @@
         loadMessages();
     };
 </script>
+
 
 </body>
 </html>
