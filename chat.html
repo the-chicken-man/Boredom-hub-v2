@@ -24,7 +24,7 @@
         <button onclick="signOut()">Sign Out</button>
         <br><br>
         <input type="text" id="usernameInput" placeholder="Enter Username">
-        <input type="text" id="messageInput" placeholder="Type a message" onkeydown="handleKeyPress(event)">
+        <input type="text" id="messageInput" placeholder="Type a message" onkeypress="handleKeyPress(event)">
         <button onclick="sendMessage()">Send</button>
         <div id="chatBox" class="chat-box" style="max-height: 400px; overflow-y: auto;"></div>
     </div>
@@ -48,7 +48,7 @@
 
         sessionStorage.setItem("userEmail", email);
         sessionStorage.setItem("username", username);
-        document.getElementById("authStatus").innerText = `Logged in as ${email}`;
+        document.getElementById("authStatus").innerText = `Logged in as ${username}`;
     }
 
     function signOut() {
@@ -122,7 +122,11 @@
             const messageElement = document.createElement("p");
             let extraStyle = "";
             let roleTag = "";
-            let userEmail = (modEmails.includes(data.user) || devEmails.includes(data.user)) ? data.user : "Hidden";
+            let userEmail = "";
+
+            if (modEmails.includes(sessionStorage.getItem("userEmail")) || devEmails.includes(sessionStorage.getItem("userEmail"))) {
+                userEmail = `(${data.user})`;
+            }
 
             if (modEmails.includes(data.user)) {
                 extraStyle = "color: yellow;";
@@ -135,7 +139,7 @@
                 roleTag = " <strong>[DEV]</strong>";
             }
 
-            messageElement.innerHTML = `<strong style="${extraStyle}">${data.username} (${userEmail})${roleTag}:</strong> ${data.text}`;
+            messageElement.innerHTML = `<strong style="${extraStyle}">${data.username} ${userEmail}${roleTag}:</strong> ${data.text}`;
             chatBox.appendChild(messageElement);
             chatBox.scrollTop = chatBox.scrollHeight;
         });
@@ -150,7 +154,7 @@
     window.onload = () => {
         const email = sessionStorage.getItem("userEmail");
         if (email) {
-            document.getElementById("authStatus").innerText = `Logged in as ${email}`;
+            document.getElementById("authStatus").innerText = `Logged in as ${sessionStorage.getItem("username")}`;
         }
         loadMessages();
     };
