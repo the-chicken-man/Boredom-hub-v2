@@ -122,11 +122,8 @@
             const messageElement = document.createElement("p");
             let extraStyle = "";
             let roleTag = "";
-            let userEmail = "";
-
-            if (modEmails.includes(sessionStorage.getItem("userEmail")) || devEmails.includes(sessionStorage.getItem("userEmail"))) {
-                userEmail = `(${data.user})`;
-            }
+            let email = sessionStorage.getItem("userEmail");
+            let isPrivileged = modEmails.includes(email) || devEmails.includes(email);
 
             if (modEmails.includes(data.user)) {
                 extraStyle = "color: yellow;";
@@ -139,7 +136,12 @@
                 roleTag = " <strong>[DEV]</strong>";
             }
 
-            messageElement.innerHTML = `<strong style="${extraStyle}">${data.username} ${userEmail}${roleTag}:</strong> ${data.text}`;
+            let userText = `<strong style="${extraStyle}">${data.username}${roleTag}:</strong> ${data.text}`;
+            if (isPrivileged) {
+                userText = `<strong style="${extraStyle}">${data.username} (${data.user})${roleTag}:</strong> ${data.text}`;
+            }
+
+            messageElement.innerHTML = userText;
             chatBox.appendChild(messageElement);
             chatBox.scrollTop = chatBox.scrollHeight;
         });
