@@ -1,20 +1,7 @@
 # Boredom-hub-v2
 
 
-Boredom Hub is your ultimate online entertainment platform, featuring a collection of fun games, interactive tools, and an engaging chat system. Version 2 introduces a brand-new chat feature, allowing users to connect with each other in real-time!
-
-## 🌟 Features
-
-### 🕹️ Games
-- **Pong** – Classic retro game.
-- **Cluster Rush** – A fast-paced jumping game.
-- **2048** – A number-merging puzzle game.
-- **More custom games coming soon!**
-
-
-  ### Fact generator
-  - **shows you  a cool random fact**
-
+Boredom Hub is your ultimate online entertainment platform, featuring a collection of fun games, interactive tools such as a brand-new chat feature, allowing users to connect with each other in real-time!
 
 
 
@@ -58,7 +45,7 @@ Boredom Hub is an open-source project licensed under the MIT License.
 - Join our community discussions in the chat feature!
 - For any issues or feature requests, open a GitHub issue.
 
-  ## DEVELOPED BY: CHICKEN MAN AND CALLIEOG
+  ## DEVELOPED BY: CHICKEN MAN, CALLIE and GOOPERD
 
 Enjoy your time on **Boredom Hub!** 🎉
 
