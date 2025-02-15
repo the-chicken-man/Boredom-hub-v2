@@ -4,139 +4,38 @@
     <link rel="icon" type="image/png" href="https://cdn-icons-png.flaticon.com/512/8595/8595483.png">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Boredom Hub - Chat</title>
+    <title>Chat - Boredom Hub</title>
     <link rel="stylesheet" href="styles.css">
-    <script src="https://cdn.ably.com/lib/ably.min-1.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/ably/browser/static/ably.min.js"></script>
 </head>
 <body>
     <div class="sidebar">
-        <a href="index.html" target="_blank">Home</a>
-        <a href="games.html" target="_blank">Games</a>
-        <a href="about.html" target="_blank">About Us</a>
-        <a href="contact.html" target="_blank">Contact</a>   
-        <a href="chat.html" target="_blank">Chat</a>
-        <a href="rabbitAI.html" target="_blank">rabbitAI calculator</a>
+        <a href="index.html">Home</a>
+        <a href="games.html">Games</a>
+        <a href="about.html">About Us</a>
+        <a href="contact.html">Contact</a>
+        <a href="chat.html" class="active">Chat</a>
+        <a href="rabbitAI.html">rabbitAI Calculator</a>
     </div>
+
     <div class="content">
-        <h2>Chat Room</h2>
-        <p id="authStatus">Not logged in</p>
-        <button onclick="signIn()">Sign In</button>
-        <button onclick="signOut()">Sign Out</button>
-        <br><br>
-        <input type="text" id="usernameInput" placeholder="Enter Username">
-        <input type="text" id="messageInput" placeholder="Type a message">
-        <button onclick="sendMessage()">Send</button>
-        <div id="chatBox" class="chat-box" style="max-height: 400px; overflow-y: auto;"></div>
+        <h1>Chat Room</h1>
+        <div id="login-container">
+            <form id="login">
+                <input type="email" id="email" placeholder="Enter your email" required>
+                <input type="text" id="username" placeholder="Enter your username" required>
+                <button type="submit">Enter Chat</button>
+            </form>
+        </div>
+
+        <div id="chat-container" style="display: none;">
+            <div id="chat-box"></div>
+            <input type="text" id="message" placeholder="Type a message...">
+            <button id="send">Send</button>
+            <div id="user-tabs"></div>
+        </div>
     </div>
 
-<script>
-    const ably = new Ably.Realtime("mGqA8g.tKm8cg:BXet5NQMtxfr8k8I4Ls0MEzeQxmsQHihc80xDsYd-Ko");
-    const channel = ably.channels.get("chat-room");
-
-    const modEmails = ["872654@dpsk12.net", "878197@dpsk12.net", "871341@dpsk12.net"];
-    const devEmails = ["856030@dpsk12.net", "866537@dpsk12.net", "871491@dpsk12.net"];
-    const headDevEmail = "856030@dpsk12.net";
-
-    function signIn() {
-        const email = prompt("Enter your email:");
-        const username = prompt("Enter your username:");
-
-        if (!email || !username) {
-            alert("Email and username are required!");
-            return;
-        }
-
-        sessionStorage.setItem("userEmail", email);
-        sessionStorage.setItem("username", username);
-        document.getElementById("authStatus").innerText = `Logged in as ${email}`;
-    }
-
-    function signOut() {
-        sessionStorage.removeItem("userEmail");
-        sessionStorage.removeItem("username");
-        document.getElementById("authStatus").innerText = "Not logged in";
-    }
-
-    function sendMessage() {
-        const messageInput = document.getElementById("messageInput").value.trim();
-        const email = sessionStorage.getItem("userEmail");
-        const username = sessionStorage.getItem("username");
-
-        if (!email || !username) {
-            alert("You must be signed in to send messages.");
-            return;
-        }
-
-        if (messageInput) {
-            channel.publish("message", { text: messageInput, user: email, username: username });
-            document.getElementById("messageInput").value = "";
-        }
-    }
-
-    function loadMessages() {
-        channel.subscribe("message", (message) => {
-            const data = message.data;
-            const chatBox = document.getElementById("chatBox");
-            const messageElement = document.createElement("p");
-
-            let extraStyle = "";
-            let roleTag = "";
-            let userEmail = data.user;
-
-            if (modEmails.includes(data.user)) {
-                extraStyle = "color: yellow;";
-                roleTag = " <strong>[MOD]</strong>";
-            } else if (data.user === headDevEmail) {
-                extraStyle = "color: blue; font-weight: bold;";
-                roleTag = " <strong>[HEAD DEV]</strong>";
-            } else if (devEmails.includes(data.user)) {
-                extraStyle = "color: red;";
-                roleTag = " <strong>[DEV]</strong>";
-            }
-
-            messageElement.innerHTML = `<strong style="${extraStyle}">${data.username}${roleTag}:</strong> ${data.text}`;
-            chatBox.appendChild(messageElement);
-            chatBox.scrollTop = chatBox.scrollHeight;
-
-            // **Check for @mentions and send a notification**
-            checkMentions(data.text, data.username);
-        });
-    }
-
-    function checkMentions(message, sender) {
-        const username = sessionStorage.getItem("username");
-        if (message.includes(`@${username}`) && document.hidden) {
-            sendNotification(sender, message);
-        }
-    }
-
-    function sendNotification(sender, message) {
-        if (Notification.permission === "granted") {
-            new Notification(`${sender} mentioned you`, { body: message });
-        } else if (Notification.permission !== "denied") {
-            Notification.requestPermission().then(permission => {
-                if (permission === "granted") {
-                    new Notification(`${sender} mentioned you`, { body: message });
-                }
-            });
-        }
-    }
-
-    // **Allow pressing "Enter" to send messages**
-    document.getElementById("messageInput").addEventListener("keypress", function(event) {
-        if (event.key === "Enter") {
-            sendMessage();
-        }
-    });
-
-    window.onload = () => {
-        const email = sessionStorage.getItem("userEmail");
-        if (email) {
-            document.getElementById("authStatus").innerText = `Logged in as ${email}`;
-        }
-        loadMessages();
-    };
-</script>
-
+    <script src="chat.js"></script>
 </body>
 </html>
