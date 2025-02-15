@@ -33,9 +33,9 @@
     const ably = new Ably.Realtime("mGqA8g.tKm8cg:BXet5NQMtxfr8k8I4Ls0MEzeQxmsQHihc80xDsYd-Ko");
     const channel = ably.channels.get("chat-room");
 
-    let mutedUsers = JSON.parse(localStorage.getItem("mutedUsers")) || {}; 
-    const modEmails = ["872654@dpsk12.net", "878197@dpsk12.net", "871341@dpsk12.net"]; 
-    const devEmails = ["856030@dpsk12.net", "866537@dpsk12.net", "871491@dpsk12.net"]; 
+    const modEmails = ["872654@dpsk12.net", "878197@dpsk12.net", "871341@dpsk12.net"];
+    const devEmails = ["856030@dpsk12.net", "866537@dpsk12.net", "871491@dpsk12.net"];
+    const headDevEmail = "856030@dpsk12.net";
 
     function signIn() {
         const email = prompt("Enter your email:");
@@ -48,7 +48,7 @@
 
         sessionStorage.setItem("userEmail", email);
         sessionStorage.setItem("username", username);
-        document.getElementById("authStatus").innerText = `Logged in as ${username}`;
+        document.getElementById("authStatus").innerText = `Logged in as ${email}`;
     }
 
     function signOut() {
@@ -67,83 +67,55 @@
             return;
         }
 
-        if (mutedUsers[email] && Date.now() < mutedUsers[email]) {
-            alert("You are muted and cannot send messages.");
-            return;
+        if (messageInput) {
+            channel.publish("message", { text: messageInput, user: email, username: username });
+            document.getElementById("messageInput").value = "";
         }
-
-        if (messageInput.startsWith("/mute")) {
-            handleMuteCommand(messageInput);
-            return;
-        }
-
-        channel.publish("message", { text: messageInput, user: email, username: username });
-        document.getElementById("messageInput").value = "";
-    }
-
-    function handleMuteCommand(message) {
-        const email = sessionStorage.getItem("userEmail");
-        if (!email) return;
-
-        if (!modEmails.includes(email) && !devEmails.includes(email)) {
-            alert("You do not have permission to mute users.");
-            return;
-        }
-
-        const messageParts = message.split(" ");
-        if (messageParts.length < 2) {
-            alert("Usage: /mute <email>");
-            return;
-        }
-
-        const emailToMute = messageParts[1];
-        if (!emailToMute.includes("@")) {
-            alert("Invalid email format.");
-            return;
-        }
-
-        mutedUsers[emailToMute] = Date.now() + 15 * 60 * 1000; 
-        localStorage.setItem("mutedUsers", JSON.stringify(mutedUsers)); 
-
-        alert(`${emailToMute} has been muted for 15 minutes.`);
-        channel.publish("message", { text: `A user has been muted for 15 minutes.`, user: "System", username: "System" });
     }
 
     function loadMessages() {
         channel.subscribe("message", (message) => {
             const data = message.data;
             const chatBox = document.getElementById("chatBox");
-
-            if (mutedUsers[data.user] && Date.now() < mutedUsers[data.user]) {
-                console.log(`Blocked message from muted user: ${data.user}`);
-                return;
-            }
-
             const messageElement = document.createElement("p");
+
             let extraStyle = "";
             let roleTag = "";
-            
+            let userEmail = data.user;
+            let emailDisplay = "";
+
+            const currentUserEmail = sessionStorage.getItem("userEmail");
+            if (modEmails.includes(currentUserEmail) || devEmails.includes(currentUserEmail) || currentUserEmail === headDevEmail) {
+                emailDisplay = ` (${userEmail})`;
+            }
+
             if (modEmails.includes(data.user)) {
                 extraStyle = "color: yellow;";
                 roleTag = " <strong>[MOD]</strong>";
-            } else if (data.user === "856030@dpsk12.net") {
-                extraStyle = "color: blue;";
+            } else if (data.user === headDevEmail) {
+                extraStyle = "color: blue; font-weight: bold;";
                 roleTag = " <strong>[HEAD DEV]</strong>";
             } else if (devEmails.includes(data.user)) {
                 extraStyle = "color: red;";
                 roleTag = " <strong>[DEV]</strong>";
             }
 
-            messageElement.innerHTML = `<strong style="${extraStyle}">${data.username}${roleTag}:</strong> ${data.text}`;
+            messageElement.innerHTML = `<strong style="${extraStyle}">${data.username}${roleTag}${emailDisplay}:</strong> ${data.text}`;
             chatBox.appendChild(messageElement);
             chatBox.scrollTop = chatBox.scrollHeight;
         });
     }
 
+    document.getElementById("messageInput").addEventListener("keypress", function(event) {
+        if (event.key === "Enter") {
+            sendMessage();
+        }
+    });
+
     window.onload = () => {
         const email = sessionStorage.getItem("userEmail");
         if (email) {
-            document.getElementById("authStatus").innerText = `Logged in as ${sessionStorage.getItem("username")}`;
+            document.getElementById("authStatus").innerText = `Logged in as ${email}`;
         }
         loadMessages();
     };
