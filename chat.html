@@ -36,7 +36,6 @@
     const modEmails = ["872654@dpsk12.net", "878197@dpsk12.net", "871341@dpsk12.net"];
     const devEmails = ["856030@dpsk12.net", "866537@dpsk12.net", "871491@dpsk12.net"];
     const headDevEmail = "856030@dpsk12.net";
-    const mutedUsers = new Map();
 
     function signIn() {
         const email = prompt("Enter your email:");
@@ -68,24 +67,6 @@
             return;
         }
 
-        if (mutedUsers.has(email) && mutedUsers.get(email) > Date.now()) {
-            alert("You are muted and cannot send messages.");
-            return;
-        }
-
-        if (messageInput.startsWith("/mut ")) {
-            if (modEmails.includes(email) || devEmails.includes(email) || email === headDevEmail) {
-                const targetEmail = messageInput.split(" ")[1];
-                if (targetEmail) {
-                    mutedUsers.set(targetEmail, Date.now() + 15 * 60 * 1000);
-                    alert(`${targetEmail} has been muted for 15 minutes.`);
-                }
-            } else {
-                alert("You do not have permission to mute users.");
-            }
-            return;
-        }
-
         if (messageInput) {
             channel.publish("message", { text: messageInput, user: email, username: username });
             document.getElementById("messageInput").value = "";
@@ -101,12 +82,6 @@
             let extraStyle = "";
             let roleTag = "";
             let userEmail = data.user;
-            let emailDisplay = "";
-
-            const currentUserEmail = sessionStorage.getItem("userEmail");
-            if (modEmails.includes(currentUserEmail) || devEmails.includes(currentUserEmail) || currentUserEmail === headDevEmail) {
-                emailDisplay = ` (${userEmail})`;
-            }
 
             if (modEmails.includes(data.user)) {
                 extraStyle = "color: yellow;";
@@ -119,12 +94,35 @@
                 roleTag = " <strong>[DEV]</strong>";
             }
 
-            messageElement.innerHTML = `<strong style="${extraStyle}">${data.username}${roleTag}${emailDisplay}:</strong> ${data.text}`;
+            messageElement.innerHTML = `<strong style="${extraStyle}">${data.username}${roleTag}:</strong> ${data.text}`;
             chatBox.appendChild(messageElement);
             chatBox.scrollTop = chatBox.scrollHeight;
+
+            // **Check for @mentions and send a notification**
+            checkMentions(data.text, data.username);
         });
     }
 
+    function checkMentions(message, sender) {
+        const username = sessionStorage.getItem("username");
+        if (message.includes(`@${username}`) && document.hidden) {
+            sendNotification(sender, message);
+        }
+    }
+
+    function sendNotification(sender, message) {
+        if (Notification.permission === "granted") {
+            new Notification(`${sender} mentioned you`, { body: message });
+        } else if (Notification.permission !== "denied") {
+            Notification.requestPermission().then(permission => {
+                if (permission === "granted") {
+                    new Notification(`${sender} mentioned you`, { body: message });
+                }
+            });
+        }
+    }
+
+    // **Allow pressing "Enter" to send messages**
     document.getElementById("messageInput").addEventListener("keypress", function(event) {
         if (event.key === "Enter") {
             sendMessage();
@@ -142,4 +140,3 @@
 
 </body>
 </html>
-
