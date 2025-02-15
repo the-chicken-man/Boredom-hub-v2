@@ -28,7 +28,7 @@
         <button onclick="sendMessage()">Send</button>
         <br><br>
 
-        <!-- Sigma GIF Selection Banner -->
+        <!-- Add Sigma Rank GIF Section -->
         <div id="sigmaBanner" style="display: none; background-color: green; padding: 10px; color: white;">
             <strong>Sigma Rank: Choose a GIF to add to the chat</strong>
             <select id="gifSelect">
@@ -37,7 +37,7 @@
                 <option value="https://media.giphy.com/media/3o85xJQXqf7LM4gfZC/giphy.gif">Excited</option>
                 <option value="https://media.giphy.com/media/26AOhxPA0XEmrszTI/giphy.gif">Laughing</option>
             </select>
-            <button onclick="addGif()">Add GIF</button>
+            <button onclick="sendGif()">Send GIF</button>
         </div>
 
         <div id="chatBox" class="chat-box" style="max-height: 400px; overflow-y: auto;"></div>
@@ -50,7 +50,7 @@
     let mutedUsers = JSON.parse(localStorage.getItem("mutedUsers")) || {}; 
     const modEmails = ["872654@dpsk12.net", "878197@dpsk12.net", "871341@dpsk12.net"]; 
     const devEmails = ["856030@dpsk12.net", "866537@dpsk12.net", "871491@dpsk12.net"]; 
-    const sigmaEmails = ["832862@dpsk12.net", "874874@dpsk12.net", "866204@dpsk12.net"]; // Add Sigma emails here
+    const sigmaEmails = ["sigma1@example.com", "sigma2@example.com"]; // Add Sigma emails here
 
     function loadMessages() {
         channel.subscribe("message", (message) => {
@@ -95,16 +95,9 @@
         });
     }
 
-    function addGif() {
-        const gifUrl = document.getElementById("gifSelect").value;
-        if (gifUrl) {
-            sendMessage(gifUrl);
-        }
-    }
-
-    function sendMessage(text) {
+    function sendMessage() {
         const messageInput = document.getElementById("messageInput");
-        const message = text || messageInput.value;
+        const message = messageInput.value;
         const username = sessionStorage.getItem("username");
         const userEmail = sessionStorage.getItem("userEmail");
 
@@ -116,6 +109,17 @@
             });
         }
         messageInput.value = '';
+    }
+
+    function sendGif() {
+        const gifUrl = document.getElementById("gifSelect").value;
+        if (gifUrl) {
+            channel.publish("message", {
+                username: sessionStorage.getItem("username"),
+                user: sessionStorage.getItem("userEmail"),
+                text: `<img src="${gifUrl}" alt="GIF">`
+            });
+        }
     }
 
     window.onload = () => {
