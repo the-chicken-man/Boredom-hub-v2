@@ -1,3 +1,34 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <link rel="icon" type="image/png" href="https://cdn-icons-png.flaticon.com/512/8595/8595483.png">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Boredom Hub - Chat</title>
+    <link rel="stylesheet" href="styles.css">
+    <script src="https://cdn.ably.com/lib/ably.min-1.js"></script>
+</head>
+<body>
+    <div class="sidebar">
+        <a href="index.html" target="_blank">Home</a>
+        <a href="games.html" target="_blank">Games</a>
+        <a href="about.html" target="_blank">About Us</a>
+        <a href="contact.html" target="_blank">Contact</a>   
+        <a href="chat.html" target="_blank">Chat</a>
+        <a href="rabbitAI.html" target="_blank">rabbitAI calculator</a>
+    </div>
+    <div class="content">
+        <h2>Chat Room</h2>
+        <p id="authStatus">Not logged in</p>
+        <button onclick="signIn()">Sign In</button>
+        <button onclick="signOut()">Sign Out</button>
+        <br><br>
+        <input type="text" id="usernameInput" placeholder="Enter Username">
+        <input type="text" id="messageInput" placeholder="Type a message">
+        <button onclick="sendMessage()">Send</button>
+        <div id="chatBox" class="chat-box" style="max-height: 400px; overflow-y: auto;"></div>
+    </div>
+
 <script>
     const ably = new Ably.Realtime("mGqA8g.tKm8cg:BXet5NQMtxfr8k8I4Ls0MEzeQxmsQHihc80xDsYd-Ko");
     const channel = ably.channels.get("chat-room");
@@ -17,7 +48,7 @@
 
         sessionStorage.setItem("userEmail", email);
         sessionStorage.setItem("username", username);
-        document.getElementById("authStatus").innerText = `Logged in as ${email}`;
+        document.getElementById("authStatus").innerText = `Logged in as ${username}`;
     }
 
     function signOut() {
@@ -75,7 +106,7 @@
         localStorage.setItem("mutedUsers", JSON.stringify(mutedUsers)); 
 
         alert(`${emailToMute} has been muted for 15 minutes.`);
-        channel.publish("message", { text: `${emailToMute} has been muted for 15 minutes.`, user: "System", username: "System" });
+        channel.publish("message", { text: `A user has been muted for 15 minutes.`, user: "System", username: "System" });
     }
 
     function loadMessages() {
@@ -91,41 +122,32 @@
             const messageElement = document.createElement("p");
             let extraStyle = "";
             let roleTag = "";
-            let userEmail = "Hidden"; // Default to Hidden email for non-devs/mods
-
-            // Show email for devs, mods, and head dev
-            if (modEmails.includes(data.user) || devEmails.includes(data.user)) {
-                userEmail = data.user;
-            }
-
+            
             if (modEmails.includes(data.user)) {
                 extraStyle = "color: yellow;";
                 roleTag = " <strong>[MOD]</strong>";
             } else if (data.user === "856030@dpsk12.net") {
-                extraStyle = "color: red;";
+                extraStyle = "color: blue;";
                 roleTag = " <strong>[HEAD DEV]</strong>";
             } else if (devEmails.includes(data.user)) {
                 extraStyle = "color: red;";
                 roleTag = " <strong>[DEV]</strong>";
             }
 
-            messageElement.innerHTML = `<strong style="${extraStyle}">${data.username} (${userEmail})${roleTag}:</strong> ${data.text}`;
+            messageElement.innerHTML = `<strong style="${extraStyle}">${data.username}${roleTag}:</strong> ${data.text}`;
             chatBox.appendChild(messageElement);
             chatBox.scrollTop = chatBox.scrollHeight;
         });
     }
 
-    function handleKeyPress(event) {
-        if (event.key === "Enter") {
-            sendMessage();
-        }
-    }
-
     window.onload = () => {
         const email = sessionStorage.getItem("userEmail");
         if (email) {
-            document.getElementById("authStatus").innerText = `Logged in as ${email}`;
+            document.getElementById("authStatus").innerText = `Logged in as ${sessionStorage.getItem("username")}`;
         }
         loadMessages();
     };
 </script>
+
+</body>
+</html>
