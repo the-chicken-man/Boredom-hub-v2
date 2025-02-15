@@ -1,5 +1,5 @@
-// Ably Chat System
-const ably = new Ably.Realtime('mGqA8g.tKm8cg:BXet5NQMtxfr8k8I4Ls0MEzeQxmsQHihc80xDsYd-Ko');
+// Initialize Ably Chat
+const ably = new Ably.Realtime('YOUR_ABLY_API_KEY');
 const channel = ably.channels.get('boredom-hub-chat');
 
 const emailInput = document.getElementById('email');
@@ -47,7 +47,7 @@ function setupUserBanner() {
     if (banner.textContent) document.body.prepend(banner);
 }
 
-// Message Sending
+// Send Messages
 messageInput.addEventListener('keypress', (e) => {
     if (e.key === 'Enter') sendMessage();
 });
@@ -68,7 +68,7 @@ function shouldHideEmail(email) {
     return roles.headDev === email || roles.devs.includes(email) || roles.mods.includes(email);
 }
 
-// Message Receiving
+// Receive Messages
 channel.subscribe('message', (msg) => {
     if (!msg.data) return;
     displayMessage(msg.data);
@@ -119,7 +119,7 @@ channel.subscribe('mute', (msg) => {
 });
 
 document.addEventListener('keydown', (e) => {
-    if (e.key === '/' && messageInput.value.startsWith('/mute ')) {
+    if (e.key === 'Enter' && messageInput.value.startsWith('/mute ')) {
         let targetEmail = messageInput.value.split(' ')[1];
         if (userEmail === roles.headDev || roles.devs.includes(userEmail) || roles.mods.includes(userEmail)) {
             channel.publish('mute', { targetEmail });
