@@ -1,5 +1,5 @@
 // Ably Chat System
-const ably = new Ably.Realtime('YOUR_ABLY_API_KEY');
+const ably = new Ably.Realtime('mGqA8g.tKm8cg:BXet5NQMtxfr8k8I4Ls0MEzeQxmsQHihc80xDsYd-Ko');
 const channel = ably.channels.get('boredom-hub-chat');
 
 const emailInput = document.getElementById('email');
