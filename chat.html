@@ -24,22 +24,8 @@
         <button onclick="signOut()">Sign Out</button>
         <br><br>
         <input type="text" id="usernameInput" placeholder="Enter Username">
-        <input type="text" id="messageInput" placeholder="Type a message" onkeypress="handleKeyPress(event)">
+        <input type="text" id="messageInput" placeholder="Type a message" onkeydown="handleKeyPress(event)">
         <button onclick="sendMessage()">Send</button>
-        <br><br>
-
-        <!-- Add Sigma Rank GIF Section -->
-        <div id="sigmaBanner" style="display: none; background-color: green; padding: 10px; color: white;">
-            <strong>Sigma Rank: Choose a GIF to add to the chat</strong>
-            <select id="gifSelect">
-                <option value="">Select a GIF</option>
-                <option value="https://media.giphy.com/media/3o6Zt4t01d6gDmfVhW/giphy.gif">Dancing</option>
-                <option value="https://media.giphy.com/media/3o85xJQXqf7LM4gfZC/giphy.gif">Excited</option>
-                <option value="https://media.giphy.com/media/26AOhxPA0XEmrszTI/giphy.gif">Laughing</option>
-            </select>
-            <button onclick="sendGif()">Send GIF</button>
-        </div>
-
         <div id="chatBox" class="chat-box" style="max-height: 400px; overflow-y: auto;"></div>
     </div>
 
@@ -50,7 +36,78 @@
     let mutedUsers = JSON.parse(localStorage.getItem("mutedUsers")) || {}; 
     const modEmails = ["872654@dpsk12.net", "878197@dpsk12.net", "871341@dpsk12.net"]; 
     const devEmails = ["856030@dpsk12.net", "866537@dpsk12.net", "871491@dpsk12.net"]; 
-    const sigmaEmails = ["sigma1@example.com", "sigma2@example.com"]; // Add Sigma emails here
+
+    function signIn() {
+        const email = prompt("Enter your email:");
+        const username = prompt("Enter your username:");
+
+        if (!email || !username) {
+            alert("Email and username are required!");
+            return;
+        }
+
+        sessionStorage.setItem("userEmail", email);
+        sessionStorage.setItem("username", username);
+        document.getElementById("authStatus").innerText = `Logged in as ${email}`;
+    }
+
+    function signOut() {
+        sessionStorage.removeItem("userEmail");
+        sessionStorage.removeItem("username");
+        document.getElementById("authStatus").innerText = "Not logged in";
+    }
+
+    function sendMessage() {
+        const messageInput = document.getElementById("messageInput").value.trim();
+        const email = sessionStorage.getItem("userEmail");
+        const username = sessionStorage.getItem("username");
+
+        if (!email || !username) {
+            alert("You must be signed in to send messages.");
+            return;
+        }
+
+        if (mutedUsers[email] && Date.now() < mutedUsers[email]) {
+            alert("You are muted and cannot send messages.");
+            return;
+        }
+
+        if (messageInput.startsWith("/mute")) {
+            handleMuteCommand(messageInput);
+            return;
+        }
+
+        channel.publish("message", { text: messageInput, user: email, username: username });
+        document.getElementById("messageInput").value = "";
+    }
+
+    function handleMuteCommand(message) {
+        const email = sessionStorage.getItem("userEmail");
+        if (!email) return;
+
+        if (!modEmails.includes(email) && !devEmails.includes(email)) {
+            alert("You do not have permission to mute users.");
+            return;
+        }
+
+        const messageParts = message.split(" ");
+        if (messageParts.length < 2) {
+            alert("Usage: /mute <email>");
+            return;
+        }
+
+        const emailToMute = messageParts[1];
+        if (!emailToMute.includes("@")) {
+            alert("Invalid email format.");
+            return;
+        }
+
+        mutedUsers[emailToMute] = Date.now() + 15 * 60 * 1000; 
+        localStorage.setItem("mutedUsers", JSON.stringify(mutedUsers)); 
+
+        alert(`${emailToMute} has been muted for 15 minutes.`);
+        channel.publish("message", { text: `${emailToMute} has been muted for 15 minutes.`, user: "System", username: "System" });
+    }
 
     function loadMessages() {
         channel.subscribe("message", (message) => {
@@ -65,8 +122,7 @@
             const messageElement = document.createElement("p");
             let extraStyle = "";
             let roleTag = "";
-            let email = sessionStorage.getItem("userEmail");
-            let isPrivileged = modEmails.includes(email) || devEmails.includes(email);
+            let userEmail = (modEmails.includes(data.user) || devEmails.includes(data.user)) ? data.user : "Hidden";
 
             if (modEmails.includes(data.user)) {
                 extraStyle = "color: yellow;";
@@ -77,55 +133,24 @@
             } else if (devEmails.includes(data.user)) {
                 extraStyle = "color: red;";
                 roleTag = " <strong>[DEV]</strong>";
-            } else if (sigmaEmails.includes(data.user)) {
-                extraStyle = "color: green;";
-                roleTag = " <strong>[SIGMA]</strong>";
-                // Show the Sigma GIF selection banner
-                document.getElementById("sigmaBanner").style.display = "block";
             }
 
-            let userText = `<strong style="${extraStyle}">${data.username}${roleTag}:</strong> ${data.text}`;
-            if (isPrivileged) {
-                userText = `<strong style="${extraStyle}">${data.username} (${data.user})${roleTag}:</strong> ${data.text}`;
-            }
-
-            messageElement.innerHTML = userText;
+            messageElement.innerHTML = `<strong style="${extraStyle}">${data.username} (${userEmail})${roleTag}:</strong> ${data.text}`;
             chatBox.appendChild(messageElement);
             chatBox.scrollTop = chatBox.scrollHeight;
         });
     }
 
-    function sendMessage() {
-        const messageInput = document.getElementById("messageInput");
-        const message = messageInput.value;
-        const username = sessionStorage.getItem("username");
-        const userEmail = sessionStorage.getItem("userEmail");
-
-        if (username && message) {
-            channel.publish("message", {
-                username,
-                user: userEmail,
-                text: message
-            });
-        }
-        messageInput.value = '';
-    }
-
-    function sendGif() {
-        const gifUrl = document.getElementById("gifSelect").value;
-        if (gifUrl) {
-            channel.publish("message", {
-                username: sessionStorage.getItem("username"),
-                user: sessionStorage.getItem("userEmail"),
-                text: `<img src="${gifUrl}" alt="GIF">`
-            });
+    function handleKeyPress(event) {
+        if (event.key === "Enter") {
+            sendMessage();
         }
     }
 
     window.onload = () => {
         const email = sessionStorage.getItem("userEmail");
         if (email) {
-            document.getElementById("authStatus").innerText = `Logged in as ${sessionStorage.getItem("username")}`;
+            document.getElementById("authStatus").innerText = `Logged in as ${email}`;
         }
         loadMessages();
     };
