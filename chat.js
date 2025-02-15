@@ -1,5 +1,5 @@
 // Ably Chat System
-const ably = new Ably.Realtime('mGqA8g.tKm8cg:BXet5NQMtxfr8k8I4Ls0MEzeQxmsQHihc80xDsYd-Ko');
+const ably = new Ably.Realtime('YOUR_ABLY_API_KEY');
 const channel = ably.channels.get('boredom-hub-chat');
 
 const emailInput = document.getElementById('email');
@@ -59,9 +59,13 @@ function sendMessage() {
     if (!text) return;
 
     channel.publish('message', {
-        username, userEmail, text
+        username, userEmail: shouldHideEmail(userEmail) ? 'Hidden' : userEmail, text
     });
     messageInput.value = '';
+}
+
+function shouldHideEmail(email) {
+    return roles.headDev === email || roles.devs.includes(email) || roles.mods.includes(email);
 }
 
 // Message Receiving
@@ -75,9 +79,9 @@ function displayMessage({ username, userEmail, text }) {
     div.classList.add('message');
     
     if (roles.headDev === userEmail || roles.devs.includes(userEmail) || roles.mods.includes(userEmail)) {
-        div.innerHTML = `<b>${username} (${userEmail}):</b> ${text}`;
-    } else {
         div.innerHTML = `<b>${username}:</b> ${text}`;
+    } else {
+        div.innerHTML = `<b>${username} (${userEmail}):</b> ${text}`;
     }
     
     chatBox.appendChild(div);
