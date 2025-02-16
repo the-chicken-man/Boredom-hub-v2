@@ -24,7 +24,7 @@
         <button onclick="signOut()">Sign Out</button>
         <br><br>
         <input type="text" id="usernameInput" placeholder="Enter Username">
-        <input type="text" id="messageInput" placeholder="Type a message" onkeydown="handleKeyPress(event)">
+        <input type="text" id="messageInput" placeholder="Type a message">
         <button onclick="sendMessage()">Send</button>
         <div id="chatBox" class="chat-box" style="max-height: 400px; overflow-y: auto;"></div>
     </div>
@@ -33,9 +33,9 @@
     const ably = new Ably.Realtime("mGqA8g.tKm8cg:BXet5NQMtxfr8k8I4Ls0MEzeQxmsQHihc80xDsYd-Ko");
     const channel = ably.channels.get("chat-room");
 
-    let mutedUsers = JSON.parse(localStorage.getItem("mutedUsers")) || {}; 
-    const modEmails = ["872654@dpsk12.net", "878197@dpsk12.net", "871341@dpsk12.net"]; 
-    const devEmails = ["856030@dpsk12.net", "866537@dpsk12.net", "871491@dpsk12.net"]; 
+    let mutedUsers = JSON.parse(localStorage.getItem("mutedUsers")) || {}; // Store muted users
+    const modEmails = ["872654@dpsk12.net", "878197@dpsk12.net", "871341@dpsk12.net"]; // Mods
+    const devEmails = ["856030@dpsk12.net", "866537@dpsk12.net", "871491@dpsk12.net"]; // Devs (including Head Dev)
 
     function signIn() {
         const email = prompt("Enter your email:");
@@ -67,16 +67,19 @@
             return;
         }
 
+        // **Check if user is muted before sending**
         if (mutedUsers[email] && Date.now() < mutedUsers[email]) {
             alert("You are muted and cannot send messages.");
             return;
         }
 
+        // **Handle mute command**
         if (messageInput.startsWith("/mute")) {
             handleMuteCommand(messageInput);
             return;
         }
 
+        // **Send message**
         channel.publish("message", { text: messageInput, user: email, username: username });
         document.getElementById("messageInput").value = "";
     }
@@ -85,6 +88,7 @@
         const email = sessionStorage.getItem("userEmail");
         if (!email) return;
 
+        // **Only Mods, Devs, and Head Dev can mute**
         if (!modEmails.includes(email) && !devEmails.includes(email)) {
             alert("You do not have permission to mute users.");
             return;
@@ -97,16 +101,24 @@
         }
 
         const emailToMute = messageParts[1];
+
         if (!emailToMute.includes("@")) {
             alert("Invalid email format.");
             return;
         }
 
-        mutedUsers[emailToMute] = Date.now() + 15 * 60 * 1000; 
-        localStorage.setItem("mutedUsers", JSON.stringify(mutedUsers)); 
+        mutedUsers[emailToMute] = Date.now() + 15 * 60 * 1000; // Mute expires in 15 minutes
+        localStorage.setItem("mutedUsers", JSON.stringify(mutedUsers)); // Save to storage
 
         alert(`${emailToMute} has been muted for 15 minutes.`);
         channel.publish("message", { text: `${emailToMute} has been muted for 15 minutes.`, user: "System", username: "System" });
+
+        // Auto-unmute after 15 minutes
+        setTimeout(() => {
+            delete mutedUsers[emailToMute];
+            localStorage.setItem("mutedUsers", JSON.stringify(mutedUsers)); // Update storage
+            channel.publish("message", { text: `${emailToMute} is now unmuted.`, user: "System", username: "System" });
+        }, 15 * 60 * 1000);
     }
 
     function loadMessages() {
@@ -114,37 +126,42 @@
             const data = message.data;
             const chatBox = document.getElementById("chatBox");
 
+            // **Block messages from muted users for everyone**
             if (mutedUsers[data.user] && Date.now() < mutedUsers[data.user]) {
                 console.log(`Blocked message from muted user: ${data.user}`);
-                return;
+                return; // Hide message for all users if the user is muted
             }
 
             const messageElement = document.createElement("p");
+
             let extraStyle = "";
             let roleTag = "";
-            let userEmail = (modEmails.includes(data.user) || devEmails.includes(data.user)) ? data.user : "Hidden";
+            let userEmail = data.user;
 
+            // **Handle mod users' display and email visibility**
             if (modEmails.includes(data.user)) {
                 extraStyle = "color: yellow;";
                 roleTag = " <strong>[MOD]</strong>";
+                // Only show email to devs or head dev
+                if (devEmails.includes(sessionStorage.getItem("userEmail"))) {
+                    userEmail = data.user;
+                } else {
+                    userEmail = "";
+                }
             } else if (data.user === "856030@dpsk12.net") {
                 extraStyle = "color: red;";
                 roleTag = " <strong>[HEAD DEV]</strong>";
+                userEmail = "";
             } else if (devEmails.includes(data.user)) {
                 extraStyle = "color: red;";
                 roleTag = " <strong>[DEV]</strong>";
+                userEmail = "";
             }
 
             messageElement.innerHTML = `<strong style="${extraStyle}">${data.username} (${userEmail})${roleTag}:</strong> ${data.text}`;
             chatBox.appendChild(messageElement);
             chatBox.scrollTop = chatBox.scrollHeight;
         });
-    }
-
-    function handleKeyPress(event) {
-        if (event.key === "Enter") {
-            sendMessage();
-        }
     }
 
     window.onload = () => {
