@@ -15,19 +15,30 @@
         <a href="contact.html">Contact</a>
         <a href="chat.html">Chat</a>
         <a href="rabbitAI.html" target="_blank">rabbitAI calculator</a>
-        <a href="partners.html" target="_blank"> Our Partners</a>
+        <a href="partners.html" target="_blank">Our Partners</a>
     </div>
     <div class="content">
         <h1>Partners</h1>
         <p>Our Partners</p>
+        <div id="partners-container"></div>
+    </div>
+    
+    <script>
+        const partners = [
+            { name: "Vortex", url: "https://dashboard.fluxus.org/" },
+            { name: "Math Project 3.0", url: "https://docs.google.com/document/d/1r0vSUKOjsFLTdtORXQ5_CYI-XbWQCQhWOhan4QY-YBM/edit?tab=t.0" },
+            { name: "Rizzy Animals", url: "https://docs.google.com/presentation/d/14ef8_TIPyeuit_y2D-UNv6OkgkxB-9tiUIm5cQhnick/edit#slide=id.p" }
+        ];
         
-            <!-- Games will be added here -->
-        </div>
-        <script>
-            const partners = [
-                { name: "Vortex", url: "https://dashboard.fluxus.org/" },
-                { name: "Math Project 3.0", url: "https://docs.google.com/document/d/1r0vSUKOjsFLTdtORXQ5_CYI-XbWQCQhWOhan4QY-YBM/edit?tab=t.0" },
-                { name: "Rizzy Animals", url: "https://docs.google.com/presentation/d/14ef8_TIPyeuit_y2D-UNv6OkgkxB-9tiUIm5cQhnick/edit#slide=id.p" },
-              </script>
+        const container = document.getElementById("partners-container");
+        
+        partners.forEach(partner => {
+            const button = document.createElement("button");
+            button.textContent = partner.name;
+            button.onclick = () => window.open(partner.url, "_blank");
+            button.style.margin = "5px"; // Adds spacing between buttons
+            container.appendChild(button);
+        });
+    </script>
 </body>
 </html>
