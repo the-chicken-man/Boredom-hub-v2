@@ -1,12 +1,17 @@
 <script>
-    document.getElementById("messageInput").addEventListener("keypress", function(event) {
-        if (event.key === "Enter") {
-            event.preventDefault(); // Prevent default newline behavior
-            sendMessage();
+    document.addEventListener("DOMContentLoaded", function() {
+        const messageInput = document.getElementById("messageInput");
+        if (messageInput) {
+            messageInput.addEventListener("keypress", function(event) {
+                if (event.key === "Enter") {
+                    event.preventDefault(); // Prevent default newline behavior
+                    sendMessage();
+                }
+            });
         }
     });
 
-    const ably = new Ably.Realtime("mGqA8g.tKm8cg:BXet5NQMtxfr8k8I4Ls0MEzeQxmsQHihc80xDsYd-Ko");
+    const ably = new Ably.Realtime("YOUR_ABLY_API_KEY"); // Replace with a valid API key before deployment
     const channel = ably.channels.get("chat-room");
 
     let mutedUsers = {}; // Stores globally muted users
@@ -34,7 +39,10 @@
     }
 
     function sendMessage() {
-        const messageInput = document.getElementById("messageInput").value.trim();
+        const messageInput = document.getElementById("messageInput");
+        if (!messageInput) return;
+
+        const messageText = messageInput.value.trim();
         const email = sessionStorage.getItem("userEmail");
         const username = sessionStorage.getItem("username");
 
@@ -50,17 +58,17 @@
         }
 
         // **Handle mute/unmute commands**
-        if (messageInput.startsWith("/mute")) {
-            handleMuteCommand(messageInput);
+        if (messageText.startsWith("/mute")) {
+            handleMuteCommand(messageText);
             return;
         }
-        if (messageInput.startsWith("/unmute")) {
-            handleUnmuteCommand(messageInput);
+        if (messageText.startsWith("/unmute")) {
+            handleUnmuteCommand(messageText);
             return;
         }
 
         // **Send message**
-        channel.publish("message", { text: messageInput, user: email, username: username });
-        document.getElementById("messageInput").value = "";
+        channel.publish("message", { text: messageText, user: email, username: username });
+        messageInput.value = "";
     }
 </script>
