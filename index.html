@@ -36,6 +36,7 @@
                 .then(response => response.text())
                 .then(html => {
                     newTab.document.open();
+                    newTab.document.title = 'about:blank';
                     newTab.document.write(html);
                     newTab.document.close();
                 })
