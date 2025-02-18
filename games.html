@@ -24,6 +24,18 @@
             <!-- Games will be added here -->
         </div>
         <script>
+            function openInAboutBlank(url) {
+                let newTab = window.open('about:blank', '_blank');
+                fetch(url)
+                    .then(response => response.text())
+                    .then(html => {
+                        newTab.document.open();
+                        newTab.document.write(html);
+                        newTab.document.close();
+                    })
+                    .catch(error => console.error('Error loading game:', error));
+            }
+
             const games = [
                 { name: "Pong", url: "pong/index.html" },
                 { name: "2048", url: "2048/index.html" },
@@ -42,14 +54,14 @@
                 { name: "Duck life 5", url: "Duck life 5/i-gues-this-is-the-end_of_funny-names.html"},
                 { name: "Gravity Driver", url: "Gravity driver DEFFYING_GRAVUTYYYY/nothing-to-see-here.html"},
                 { name: "Ripoff Slither.io", url: "Slither io ripoff/nothing_you_need_to_care_about_no-one-ever-looks_at_the_url.html"},
-               ];
+            ];
 
             const gamesList = document.getElementById("games-list");
             games.forEach(game => {
                 const button = document.createElement("button");
                 button.innerText = game.name;
                 button.classList.add("game-button");
-                button.onclick = () => window.location.href = game.url;
+                button.onclick = () => openInAboutBlank(game.url);
                 gamesList.appendChild(button);
             });
         </script>
