@@ -9,13 +9,13 @@
 </head>
 <body>
     <div class="sidebar">
-        <a href="index.html" target="_blank">Home</a>
-        <a href="games.html" target="_blank">Games</a>
-        <a href="about.html" target="_blank">About Us</a>
-        <a href="contact.html" target="_blank">Contact</a>   
-        <a href="chat.html" target="_blank">Chat</a>
-        <a href="rabbitAI.html" target="_blank">rabbitAI calculator</a>
-        <a href="partners.html" target="_blank">Our Partners</a>
+        <a href="#" onclick="openInAboutBlank('index.html')">Home</a>
+        <a href="#" onclick="openInAboutBlank('games.html')">Games</a>
+        <a href="#" onclick="openInAboutBlank('about.html')">About Us</a>
+        <a href="#" onclick="openInAboutBlank('contact.html')">Contact</a>   
+        <a href="#" onclick="openInAboutBlank('chat.html')">Chat</a>
+        <a href="#" onclick="openInAboutBlank('rabbitAI.html')">rabbitAI calculator</a>
+        <a href="#" onclick="openInAboutBlank('partners.html')">Our Partners</a>
     </div>
     
     <div class="content">
@@ -27,8 +27,19 @@
 
     <script>
         function openBoredomHubV2() {
+            openInAboutBlank('https://boredom-hub-v1-1.onrender.com');
+        }
+
+        function openInAboutBlank(url) {
             let newTab = window.open('about:blank', '_blank');
-            newTab.document.write('<iframe src=" https://boredom-hub-v1-1.onrender.com/index.html" width="100%" height="100%" style="border:none;"></iframe>');
+            fetch(url)
+                .then(response => response.text())
+                .then(html => {
+                    newTab.document.open();
+                    newTab.document.write(html);
+                    newTab.document.close();
+                })
+                .catch(error => console.error('Error loading page:', error));
         }
     </script>
 </body>
