@@ -6,6 +6,31 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Boredom Hub</title>
     <link rel="stylesheet" href="styles.css">
+    <style>
+        .open-blank-button {
+            background: linear-gradient(135deg, #4CAF50, #2E8B57);
+            border: none;
+            color: white;
+            padding: 12px 20px;
+            font-size: 16px;
+            font-weight: bold;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: 0.3s ease-in-out;
+            box-shadow: 3px 3px 10px rgba(0, 0, 0, 0.2);
+        }
+
+        .open-blank-button:hover {
+            background: linear-gradient(135deg, #2E8B57, #4CAF50);
+            transform: scale(1.05);
+            box-shadow: 5px 5px 15px rgba(0, 0, 0, 0.3);
+        }
+
+        .open-blank-button:active {
+            transform: scale(0.95);
+            box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.2);
+        }
+    </style>
 </head>
 <body>
     <div class="sidebar">
@@ -14,8 +39,8 @@
         <a href="about.html" onclick="navigate(event, 'about.html')">About Us</a>
         <a href="contact.html" onclick="navigate(event, 'contact.html')">Contact</a>
         <a href="chat.html" onclick="navigate(event, 'chat.html')">Chat</a>
-        <a href="rabbitAI.html"onclick="navigate(event, 'rabbitAI.html')">RabbitAI Calculator</a>
-        <a href="partners.html"onclick=navigate(event, 'part>Our Partners</a>
+        <a href="rabbitAI.html" onclick="navigate(event, 'rabbitAI.html')">RabbitAI Calculator</a>
+        <a href="partners.html" onclick="navigate(event, 'partners.html')">Our Partners</a>
         <a href="features.html">Features</a>
     </div>
     
@@ -23,7 +48,7 @@
         <h1>Welcome to Boredom Hub</h1>
         <p>Boredom Hub is your ultimate destination for fun and entertainment. Explore a variety of exciting games and enjoy a sleek, interactive experience designed to keep you engaged.</p>
         
-        <button onclick="openBoredomHubV2()">Open Boredom Hub V2 in about:blank</button>
+        <button class="open-blank-button" onclick="openBoredomHubV2()">Open Boredom Hub V2 in about:blank</button>
     </div>
 
     <script>
