@@ -95,13 +95,7 @@
             { name: "Retro Bowl", url: "Retro Bowl/nothing.html"}
         ];
 
-        const gamesList = document.getElementById("games-list");
-        games.forEach(game => {
-            const button = document.createElement("button");
-            button.innerText = game.name;
-            button.classList.add("game-button");
-            button.onclick = () => openInAboutBlank(game.url);
-            gamesList.appendChild(button);
+       
         });
     </script>
 </body>
