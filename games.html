@@ -16,30 +16,24 @@
         <a href="chat.html">Chat</a>
         <a href="rabbitAI.html" target="_blank">rabbitAI calculator</a>
         <a href="partners.html" target="_blank">Our Partners</a>
-         <a href="features.html" target="_blank">Features</a>
-         <div class="sidebar-logo">
-       <img src="Evicly, this is boredom hub logo (1).png" alt="Boredom Hub Logo" class="small-logo">
+        <a href="features.html" target="_blank">Features</a>
+        <div class="sidebar-logo">
+            <img src="Evicly, this is boredom hub logo (1).png" alt="Boredom Hub Logo" class="small-logo">
+        </div>
+    </div>
 
-    </div>
-    </div>
     <div class="content">
         <h1>Games</h1>
         <p>Click a button below to play a game!</p>
         <div id="games-list" class="games-container">
-            <!-- Games will be added here -->
+            <!-- Game buttons will be generated here -->
         </div>
-      <script>
+    </div>
+
+    <script>
         document.addEventListener("DOMContentLoaded", function () {
             function openInAboutBlank(url) {
-                let newTab = window.open('about:blank', '_blank');
-                fetch(url)
-                    .then(response => response.text())
-                    .then(html => {
-                        newTab.document.open();
-                        newTab.document.write(html);
-                        newTab.document.close();
-                    })
-                    .catch(error => console.error('Error loading game:', error));
+                window.open(url, '_blank');
             }
 
             const games = [
@@ -61,10 +55,16 @@
                 { name: "Gravity Driver", url: "Gravity driver DEFFYING_GRAVUTYYYY/nothing-to-see-here.html"},
                 { name: "Ripoff Slither.io", url: "Slither io ripoff/nothing_you_need_to_care_about_no-one-ever-looks_at_the_url.html"},
                 { name: "Red vs Blue 1", url: "Red V Blue/hgjhfhhfh.html"},
-                { name: "Retro Bowl", url: "Retro Bowl/nothing.html"},
+                { name: "Retro Bowl", url: "Retro Bowl/nothing.html"}
             ];
 
             const gamesList = document.getElementById("games-list");
+
+            if (!gamesList) {
+                console.error("Element with ID 'games-list' not found.");
+                return;
+            }
+
             games.forEach(game => {
                 const button = document.createElement("button");
                 button.innerText = game.name;
@@ -75,6 +75,33 @@
         });
     </script>
 
-    </div>
+    <style>
+        .games-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            justify-content: center;
+            margin-top: 20px;
+        }
+
+        .game-button {
+            display: inline-block;
+            width: 200px;
+            padding: 10px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            text-align: center;
+            transition: background-color 0.3s;
+        }
+
+        .game-button:hover {
+            background-color: #45a049;
+        }
+    </style>
+
 </body>
 </html>
