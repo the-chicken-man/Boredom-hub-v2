@@ -9,17 +9,17 @@
 </head>
 <body>
     <div class="sidebar">
-       <a href="index.html">Home</a>
-        <a href="games.html">Games</a>
-        <a href="about.html">About Us</a>
-        <a href="contact.html">Contact</a>
-        <a href="chat.html">Chat</a>
-        <a href="rabbitAI.html" target="_blank">rabbitAI calculator</a>
-        <a href="partners.html" target="_blank">Our Partners</a>
-      <a href="features.html" target="_blank">Features</a>
+        <a href="index.html" onclick="navigate(event, 'index.html')">Home</a>
+        <a href="games.html" onclick="navigate(event, 'games.html')">Games</a>
+        <a href="about.html" onclick="navigate(event, 'about.html')">About Us</a>
+        <a href="contact.html" onclick="navigate(event, 'contact.html')">Contact</a>
+        <a href="chat.html" onclick="navigate(event, 'chat.html')">Chat</a>
+        <a href="rabbitAI.html">RabbitAI Calculator</a>
+        <a href="partners.html">Our Partners</a>
+        <a href="features.html">Features</a>
     </div>
     
-    <div class="content">
+    <div class="content" id="main-content">
         <h1>Welcome to Boredom Hub</h1>
         <p>Boredom Hub is your ultimate destination for fun and entertainment. Explore a variety of exciting games and enjoy a sleek, interactive experience designed to keep you engaged.</p>
         
@@ -27,6 +27,17 @@
     </div>
 
     <script>
+        function navigate(event, page) {
+            event.preventDefault(); 
+            fetch(page)
+                .then(response => response.text())
+                .then(html => {
+                    document.getElementById('main-content').innerHTML = html;
+                    history.pushState(null, '', page);
+                })
+                .catch(error => console.error('Error loading page:', error));
+        }
+
         function openBoredomHubV2() {
             openInAboutBlank('https://boredom-hub-v1-1.onrender.com');
         }
@@ -37,7 +48,7 @@
                 .then(response => response.text())
                 .then(html => {
                     newTab.document.open();
-                    newTab.document.title = 'about:blank';
+                    newTab.document.title = 'Boredom Hub V2';
                     newTab.document.write(html);
                     newTab.document.close();
                 })
