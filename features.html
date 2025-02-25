@@ -5,7 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Features - Boredom Hub</title>
     <link rel="stylesheet" href="styles.css">
-    <link rel="icon" type="image/png" href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAABSElEQVR42mNkAIJbnr77B2OXX35N+PyS+bv3v6K6dLFOQF2YPlfzp5//nBhPnpAm/v1w+bLTv+Xzg1/9C6XOl99+/eNXYIFLvmgLgB0g6MNhANIPuHhQN2ASz9+BcjeVgrqF2D6Qdw/2ElwMocg8I2OXMdAbkApCwLEm3LsAGInNMiPfj6CPH2/tnP7zdkTcCZHY1ALp9+7d5vx+M0+64Byvzn5kX9ubff3evLsP14nMxhAMmD1eAII4hR7cBgohw3wQ6D+YYsA8B3kKmBUg5lyjIAVNwFYH0lQ3YC5UIZKcInNAEBtIPwBuIXuOCjGsQsAAAAASUVORK5CYII=">
+    <link rel="manifest" href="manifest.json">
+    <link rel="icon" type="image/png" href="https://cdn-icons-png.flaticon.com/512/8595/8595483.png">
 </head>
 <body>
     <div class="sidebar">
@@ -16,30 +17,61 @@
         <a href="chat.html">Chat</a>
         <a href="rabbitAI.html" target="_blank">rabbitAI calculator</a>
         <a href="partners.html" target="_blank">Our Partners</a>
-      <a href="features.html" target="_blank">Features</a>
+        <a href="features.html">Features</a>
     </div>
+
     <div class="content">
         <h1>Features</h1>
-        <p>Click a button below to use a feature</p>
-        <div id="games-list" class="games-container">
-            <!-- Games will be added here -->
-        </div>
-        <script>
-      
-            const games = [
-                { name: "Highly pixelated Shrek movie with no audio", url: "shrekmovie.mp4" },
-                { name: "Download app", url: "2048/index.html" },
-            ];
+        <p>Click a button below to use a feature:</p>
 
-            const gamesList = document.getElementById("games-list");
-            games.forEach(game => {
-                const button = document.createElement("button");
-                button.innerText = game.name;
-                button.classList.add("game-button");
-                button.onclick = () => openInAboutBlank(game.url);
-                gamesList.appendChild(button);
-            });
-        </script>
+        <div id="features-list" class="features-container">
+            <!-- Buttons will be added dynamically -->
+        </div>
     </div>
+
+    <script>
+        let deferredPrompt;
+
+        // Listen for install prompt event
+        window.addEventListener('beforeinstallprompt', (event) => {
+            event.preventDefault();
+            deferredPrompt = event;
+            console.log("App can be installed!");
+        });
+
+        // Features list
+        const features = [
+            { name: "Highly pixelated Shrek movie with no audio", url: "shrekmovie.mp4" },
+            { name: "Download app", action: "installApp" }
+        ];
+
+        const featuresList = document.getElementById("features-list");
+
+        features.forEach(feature => {
+            const button = document.createElement("button");
+            button.innerText = feature.name;
+            button.classList.add("feature-button");
+
+            if (feature.action === "installApp") {
+                button.onclick = () => {
+                    if (deferredPrompt) {
+                        deferredPrompt.prompt();
+                        deferredPrompt.userChoice.then(choiceResult => {
+                            if (choiceResult.outcome === 'accepted') {
+                                console.log('User installed the app');
+                            }
+                            deferredPrompt = null;
+                        });
+                    } else {
+                        alert("App installation not supported on this browser.");
+                    }
+                };
+            } else {
+                button.onclick = () => window.open(feature.url, '_blank');
+            }
+
+            featuresList.appendChild(button);
+        });
+    </script>
 </body>
 </html>
