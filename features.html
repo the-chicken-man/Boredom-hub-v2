@@ -7,6 +7,39 @@
     <link rel="stylesheet" href="styles.css">
     <link rel="manifest" href="manifest.json">
     <link rel="icon" type="image/png" href="https://cdn-icons-png.flaticon.com/512/8595/8595483.png">
+    <style>
+        .features-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        .feature-button {
+            background: linear-gradient(135deg, #ff7e5f, #feb47b);
+            border: none;
+            color: white;
+            padding: 12px 20px;
+            font-size: 16px;
+            font-weight: bold;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: 0.3s ease-in-out;
+            box-shadow: 3px 3px 10px rgba(0, 0, 0, 0.2);
+        }
+
+        .feature-button:hover {
+            background: linear-gradient(135deg, #feb47b, #ff7e5f);
+            transform: scale(1.05);
+            box-shadow: 5px 5px 15px rgba(0, 0, 0, 0.3);
+        }
+
+        .feature-button:active {
+            transform: scale(0.95);
+            box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.2);
+        }
+    </style>
 </head>
 <body>
     <div class="sidebar">
