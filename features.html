@@ -25,18 +25,7 @@
             <!-- Games will be added here -->
         </div>
         <script>
-            function openInAboutBlank(url) {
-                let newTab = window.open('about:blank', '_blank');
-                fetch(url)
-                    .then(response => response.text())
-                    .then(html => {
-                        newTab.document.open();
-                        newTab.document.write(html);
-                        newTab.document.close();
-                    })
-                    .catch(error => console.error('Error loading game:', error));
-            }
-
+      
             const games = [
                 { name: "Highly pixelated Shrek movie with no audio", url: "shrekmovie.mp4" },
                 { name: "Download app", url: "2048/index.html" },
