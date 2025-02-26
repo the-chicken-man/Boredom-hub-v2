@@ -1,3 +1,4 @@
+/* styles.css */
 @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&display=swap');
 
 body {
@@ -62,9 +63,24 @@ p {
     opacity: 0.8;
 }
 
-.small-logo {
-    max-width: 120px; /* Make it smaller */
-    height: auto; /* Keeps aspect ratio */
-    display: block;
-    margin: 10px auto; /* Centers it */
+/* Cool button styles */
+.game-button {
+    background: linear-gradient(45deg, #ff416c, #ff4b2b);
+    border: none;
+    color: white;
+    font-size: 1.2rem;
+    font-weight: bold;
+    padding: 15px 30px;
+    margin: 10px;
+    border-radius: 10px;
+    cursor: pointer;
+    transition: 0.3s ease-in-out;
+    box-shadow: 0px 4px 10px rgba(255, 75, 43, 0.5);
+    text-transform: uppercase;
+}
+
+.game-button:hover {
+    background: linear-gradient(45deg, #ff4b2b, #ff416c);
+    transform: scale(1.1);
+    box-shadow: 0px 6px 15px rgba(255, 75, 43, 0.8);
 }
