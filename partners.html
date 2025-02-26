@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Partners - Boredom Hub</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="icon" type="image/x-icon" href="favicon.ico">
+  <style>
+        .partner-button {
+            background-color: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            margin: 5px;
+            font-size: 16px;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+        .partner-button:hover {
+            background-color: #0056b3;
+        }
+    </style>
+</head>
+<body>
+   <div class="sidebar">
+        <a href="index.html" ">Home</a>
+        <a href="games.html"">Games</a>
+        <a href="about.html" ">About Us</a>
+        <a href="contact.html"">Contact</a>   
+        <a href="chat.html" ">Chat</a> 
+      <a href="rabbitAI.html" ">rabbitAI calculator</a>
+        <a href="partners.html" "> Our Partners</a>
+         <a href="features.html"">Features</a>
+        <img src="Evicly, this is boredom hub logo (1).png" alt="Boredom Hub Logo" style="width: 150px; margin-top: 20px;">
+    </div>
+    <div class="content">
+        <h1>Partners</h1>
+        <p>Our Partners</p>
+        <div id="partners-container"></div>
+    </div>
+    
+    <script>
+        const partners = [
+            { name: "Vortex", url: "https://dashboard.fluxus.org/" },
+            { name: "Math Project 3.0", url: "https://docs.google.com/document/d/1r0vSUKOjsFLTdtORXQ5_CYI-XbWQCQhWOhan4QY-YBM/edit?tab=t.0" },
+            { name: "Rizzy Animals", url: "https://docs.google.com/presentation/d/14ef8_TIPyeuit_y2D-UNv6OkgkxB-9tiUIm5cQhnick/edit#slide=id.p" },
+            { name: "Unbore yourself in school", url: "https://unbore-your-self-in-school.vercel.app/" }
+        ];
+        
+        const container = document.getElementById("partners-container");
+        
+        partners.forEach(partner => {
+            const button = document.createElement("button");
+            button.textContent = partner.name;
+            button.className = "partner-button";
+            button.onclick = () => window.open(partner.url, "_blank");
+            container.appendChild(button);
+        });
+    </script>
+</body>
+</html>

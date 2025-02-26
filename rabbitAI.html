@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <link rel="icon" type="image/x-icon" href="favicon.ico">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>rabbit.ai</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="sidebar">
+        <a href="index.html" ">Home</a>
+        <a href="games.html"">Games</a>
+        <a href="about.html" ">About Us</a>
+        <a href="contact.html"">Contact</a>   
+        <a href="chat.html" ">Chat</a> 
+      <a href="rabbitAI.html" ">rabbitAI calculator</a>
+        <a href="partners.html" "> Our Partners</a>
+         <a href="features.html"">Features</a>
+         <img src="Evicly, this is boredom hub logo (1).png" alt="Boredom Hub Logo" style="width: 150px; margin-top: 20px;">
+    </div>
+    
+    <div class="content">
+        <h1>Welcome to rabbit.ai</h1>
+        <p>rabbit.ai is here to solve your math problems instantly! Enter your equation below and get an answer.</p>
+        <input type="text" id="mathInput" placeholder="Enter a math equation...">
+        <button onclick="solveMath()">Solve</button>
+        <p id="result"></p>
+    </div>
+
+    <script>
+        function solveMath() {
+            let input = document.getElementById("mathInput").value;
+            try {
+                let result = eval(input);
+                document.getElementById("result").innerText = "Result: " + result;
+            } catch (error) {
+                document.getElementById("result").innerText = "Invalid input! Please enter a valid equation.";
+            }
+        }
+    </script>
+</body>
+</html>
