@@ -31,6 +31,19 @@
         .btn:hover {
             background-color: #0056b3;
         }
+        .movie-item {
+            display: inline-block;
+            margin: 20px;
+            text-align: center;
+        }
+        .movie-item img {
+            width: 200px;
+            height: auto;
+            border-radius: 5px;
+        }
+        .movie-item h3 {
+            margin-top: 10px;
+        }
     </style>
 </head>
 <body>
@@ -40,15 +53,20 @@
         <a href="about.html" ">About Us</a>
         <a href="contact.html"">Contact</a>   
         <a href="chat.html" ">Chat</a> 
-      <a href="rabbitAI.html" ">rabbitAI calculator</a>
+        <a href="rabbitAI.html" ">rabbitAI calculator</a>
         <a href="partners.html" "> Our Partners</a>
          <a href="features.html"">Features</a>
         <img src="Evicly, this is boredom hub logo (1).png" alt="Boredom Hub Logo" style="width: 150px; margin-top: 20px;">
     </div>
     <div class="container">
         <h1>Movies</h1>
-        <a href="nightdead.html" class="btn">Night of the Living Dead</a>
-        
+        <div class="movie-item">
+            <a href="nightdead.html" class="btn">
+                <img src="night_of_the_living_dead.jpg" alt="Night of the Living Dead Poster">
+            </a>
+            <h3>Night of the Living Dead</h3>
+        </div>
+        <!-- Add more movies here with similar structure -->
     </div>
 </body>
 </html>
