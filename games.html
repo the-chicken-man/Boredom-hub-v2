@@ -5,38 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Games - Boredom Hub</title>
     <link rel="stylesheet" href="styles.css">
-    <link rel="icon" type="image/x-icon" href="favicon.ico">
-    <style>
-        .games-container {
-            display: flex;
-            flex-wrap: wrap;
-            justify-content: center;
-            gap: 15px;
-            padding: 20px;
-        }
-
-        .game-button {
-            background: linear-gradient(45deg, #ff416c, #ff4b2b);
-            border: none;
-            color: white;
-            font-size: 1.2rem;
-            font-weight: bold;
-            padding: 15px 30px;
-            border-radius: 10px;
-            cursor: pointer;
-            transition: 0.3s ease-in-out;
-            box-shadow: 0px 4px 10px rgba(255, 75, 43, 0.5);
-            text-transform: uppercase;
-            width: 200px;
-            text-align: center;
-        }
-
-        .game-button:hover {
-            background: linear-gradient(45deg, #ff4b2b, #ff416c);
-            transform: scale(1.1);
-            box-shadow: 0px 6px 15px rgba(255, 75, 43, 0.8);
-        }
-    </style>
+    <link rel="icon" type="image/png" href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAABSElEQVR42mNkAIJbnr77B2OXX35N+PyS+bv3v6K6dLFOQF2YPlfzp5//nBhPnpAm/v1w+bLTv+Xzg1/9C6XOl99+/eNXYIFLvmgLgB0g6MNhANIPuHhQN2ASz9+BcjeVgrqF2D6Qdw/2ElwMocg8I2OXMdAbkApCwLEm3LsAGInNMiPfj6CPH2/tnP7zdkTcCZHY1ALp9+7d5vx+M0+64Byvzn5kX9ubff3evLsP14nMxhAMmD1eAII4hR7cBgohw3wQ6D+YYsA8B3kKmBUg5lyjIAVNwFYH0lQ3YC5UIZKcInNAEBtIPwBuIXuOCjGsQsAAAAASUVORK5CYII=">
 </head>
 <body>
     <div class="sidebar">
@@ -45,58 +14,59 @@
         <a href="about.html">About Us</a>
         <a href="contact.html">Contact</a>
         <a href="chat.html">Chat</a>
-        <a href="rabbitAI.html" target="_blank">RabbitAI Calculator</a>
+        <a href="rabbitAI.html" target="_blank">rabbitAI calculator</a>
         <a href="partners.html" target="_blank">Our Partners</a>
-        <a href="features.html" target="_blank">Features</a>
-        <div class="sidebar-logo">
-            <img src="Evicly, this is boredom hub logo (1).png" alt="Boredom Hub Logo" class="small-logo">
-        </div>
     </div>
     <div class="content">
         <h1>Games</h1>
         <p>Click a button below to play a game!</p>
-        <div class="games-container" id="games-list">
-            <!-- Game buttons will be inserted here dynamically -->
+        <div id="games-list" class="games-container">
+            <!-- Games will be added here -->
         </div>
+        <script>
+            function openInAboutBlank(url) {
+                let newTab = window.open('about:blank', '_blank');
+                fetch(url)
+                    .then(response => response.text())
+                    .then(html => {
+                        newTab.document.open();
+                        newTab.document.write(html);
+                        newTab.document.close();
+                    })
+                    .catch(error => console.error('Error loading game:', error));
+            }
+
+            const games = [
+                { name: "Pong", url: "pong/index.html" },
+                { name: "2048", url: "2048/index.html" },
+                { name: "Cluster Rush", url: "Cluster Rush/index.html" },
+                { name: "Eaglercraft", url: "Eaglercraft 1.5.2/eaglercraft.1.5.2.html"},
+                { name: "Survival Race", url: "Survival race/sigma.html"},
+                { name: "Cs 1.6", url: "CS 1.6/sigmacodeboi.html"},
+                { name: "Red vs Blue 2", url: "red v blue/definetlynotcode.html"},
+                { name: "Stunt Cars", url: "Stunt Cars/ahhh_why_am_i-htmlcode.html"},
+                { name: "Granny", url: "Granny/poppqa.html"},
+                { name: "Chicken war", url: "Chicken war/Raise_your_yahhhhh_yah_yahhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhh.html"},
+                { name: "Gangster life (BTW i live the thug life)", url: "THUG LIFE/I-live-that-thug-life-everyday-im-hustil-with-my-homies.html"},
+                { name: "Age of war", url: "Age-of-your grandma/dont-look-at-the-url-you-wont-like-what-you-see.html"},
+                { name: "Snow rider", url: "Snow rider/go-to-secret-boredom-hub-site.onrender.com_____okayyyy-now-coool.html"},
+                { name: "Funny Shooter", url: "Funny shooter/im-done-with-these_friggin_stupid_funny_names_they_all-friggin-suck.html"},
+                { name: "Duck life 5", url: "Duck life 5/i-gues-this-is-the-end_of_funny-names.html"},
+                { name: "Gravity Driver", url: "Gravity driver DEFFYING_GRAVUTYYYY/nothing-to-see-here.html"},
+                { name: "Ripoff Slither.io", url: "Slither io ripoff/nothing_you_need_to_care_about_no-one-ever-looks_at_the_url.html"},
+                { name: "Red vs Blue 1", url: "Red V Blue/hgjhfhhfh.html"},
+                { name: "Retro Bowl", url: "Retro Bowl/nothing.html"}
+            ];
+
+            const gamesList = document.getElementById("games-list");
+            games.forEach(game => {
+                const button = document.createElement("button");
+                button.innerText = game.name;
+                button.classList.add("game-button");
+                button.onclick = () => openInAboutBlank(game.url);
+                gamesList.appendChild(button);
+            });
+        </script>
     </div>
-
-    <script>
-        function openInAboutBlank(url) {
-            let newTab = window.open('about:blank', '_blank');
-            fetch(url)
-                .then(response => response.text())
-                .then(html => {
-                    newTab.document.open();
-                    newTab.document.write(html);
-                    newTab.document.close();
-                })
-                .catch(error => console.error('Error loading game:', error));
-        }
-
-        const games = [
-            { name: "Pong", url: "pong/index.html" },
-            { name: "2048", url: "2048/index.html" },
-            { name: "Cluster Rush", url: "Cluster Rush/index.html" },
-            { name: "Eaglercraft", url: "Eaglercraft 1.5.2/eaglercraft.1.5.2.html"},
-            { name: "Survival Race", url: "Survival race/sigma.html"},
-            { name: "Cs 1.6", url: "CS 1.6/sigmacodeboi.html"},
-            { name: "Red vs Blue 2", url: "red v blue/definetlynotcode.html"},
-            { name: "Stunt Cars", url: "Stunt Cars/ahhh_why_am_i-htmlcode.html"},
-            { name: "Granny", url: "Granny/poppqa.html"},
-            { name: "Chicken War", url: "Chicken war/Raise_your_yahhhhh_yah_yahhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhh.html"},
-            { name: "Gangster Life", url: "THUG LIFE/I-live-that-thug-life-everyday-im-hustil-with-my-homies.html"},
-            { name: "Age of War", url: "Age-of-your grandma/dont-look-at-the-url-you-wont-like-what-you-see.html"},
-            { name: "Snow Rider", url: "Snow rider/go-to-secret-boredom-hub-site.onrender.com_____okayyyy-now-coool.html"},
-            { name: "Funny Shooter", url: "Funny shooter/im-done-with-these_friggin_stupid_funny_names_they_all-friggin-suck.html"},
-            { name: "Duck Life 5", url: "Duck life 5/i-gues-this-is-the-end_of_funny-names.html"},
-            { name: "Gravity Driver", url: "Gravity driver DEFFYING_GRAVUTYYYY/nothing-to-see-here.html"},
-            { name: "Ripoff Slither.io", url: "Slither io ripoff/nothing_you_need_to_care_about_no-one-ever-looks_at_the_url.html"},
-            { name: "Red vs Blue 1", url: "Red V Blue/hgjhfhhfh.html"},
-            { name: "Retro Bowl", url: "Retro Bowl/nothing.html"}
-        ];
-
-       
-        });
-    </script>
 </body>
 </html>
