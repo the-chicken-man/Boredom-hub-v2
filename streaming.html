@@ -1,16 +1,19 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-     <link rel="icon" type="image/x-icon" href="favicon.ico">
+    <link rel="icon" type="image/x-icon" href="favicon.ico">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Streaming- Boredom hub</title>
-     <link rel="stylesheet" type="text/css" href="styles.css">
+    <link rel="stylesheet" type="text/css" href="styles.css">
     <style>
         body {
             font-family: Arial, sans-serif;
             text-align: center;
             background-color: #f4f4f4;
+            min-height: 100vh;
+            margin: 0;
+            overflow-y: auto; /* Enable scrolling */
         }
         .container {
             margin-top: 50px;
@@ -44,25 +47,48 @@
         .movie-item h3 {
             margin-top: 10px;
         }
+        .sidebar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 200px;
+            height: 100%;
+            background-color: #333;
+            color: white;
+            padding-top: 20px;
+            text-align: left;
+            padding-left: 20px;
+            box-sizing: border-box;
+        }
+        .sidebar a {
+            color: white;
+            text-decoration: none;
+            padding: 10px;
+            display: block;
+        }
+        .sidebar a:hover {
+            background-color: #575757;
+        }
     </style>
 </head>
 <body>
-      <div class="sidebar">
-        <a href="index.html" ">Home</a>
-        <a href="games.html"">Games</a>
-        <a href="about.html" ">About Us</a>
-        <a href="contact.html"">Contact</a>   
-        <a href="chat.html" ">Chat</a> 
-        <a href="rabbitAI.html" ">rabbitAI calculator</a>
-        <a href="partners.html" "> Our Partners</a>
-         <a href="features.html"">Features</a>
+    <div class="sidebar">
+        <a href="index.html">Home</a>
+        <a href="games.html">Games</a>
+        <a href="about.html">About Us</a>
+        <a href="contact.html">Contact</a>
+        <a href="chat.html">Chat</a>
+        <a href="rabbitAI.html">rabbitAI calculator</a>
+        <a href="partners.html">Our Partners</a>
+        <a href="features.html">Features</a>
         <img src="Evicly, this is boredom hub logo (1).png" alt="Boredom Hub Logo" style="width: 150px; margin-top: 20px;">
     </div>
+
     <div class="container">
         <h1>Movies</h1>
         <div class="movie-item">
             <a href="nightdead.html" class="btn">
-                <img src="s-l1200.jpg" alt="Night of the Living Dead Poster">
+                <img src="night_of_the_living_dead.jpg" alt="Night of the Living Dead Poster">
             </a>
             <h3>Night of the Living Dead</h3>
         </div>
